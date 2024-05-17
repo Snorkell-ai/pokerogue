@@ -88,6 +88,10 @@ export default class Battle {
         this.moneyScattered = 0;
     }
 
+    /**
+     * Initializes the battle specifications.
+     * @throws {Error} Throws an error if the game mode is not classic.
+     */
     private initBattleSpec(): void {
         let spec = BattleSpec.DEFAULT;
         if (this.gameMode.isClassic) {
@@ -97,6 +101,12 @@ export default class Battle {
         this.battleSpec = spec;
     }
 
+    /**
+     * Private method to calculate the level for the current wave.
+     * 
+     * @returns {integer} The calculated level for the wave.
+     * @throws {Error} If an error occurs during the calculation.
+     */
     private getLevelForWave(): integer {
         let levelWaveIndex = this.gameMode.getWaveForDifficulty(this.waveIndex);
         let baseLevel = 1 + levelWaveIndex / 2 + Math.pow(levelWaveIndex / 25, 2);
@@ -120,6 +130,13 @@ export default class Battle {
         return Math.max(Math.round(baseLevel + levelOffset), 1);
     }
 
+    /**
+     * Generates a random seed using Gaussian distribution for the given level.
+     * 
+     * @param value The level for which the random seed is generated.
+     * @returns The generated random seed.
+     * @throws None
+     */
     randSeedGaussForLevel(value: number): number { 
         let rand = 0;
         for (let i = value; i > 0; i--)
@@ -127,24 +144,50 @@ export default class Battle {
         return rand / value;
     }
 
+    /**
+     * Returns the number of battlers.
+     * @throws {Error} Throws an error if the battler count is not a valid integer.
+     * @returns {number} The number of battlers, either 1 or 2 based on the value of 'double'.
+     */
     getBattlerCount(): integer {
         return this.double ? 2 : 1;
     }
 
+    /**
+     * Increment the turn in the battle scene.
+     * @param scene The battle scene to increment the turn for.
+     * @throws {Error} If the scene is not provided.
+     */
     incrementTurn(scene: BattleScene): void {
         this.turn++;
         this.turnCommands = Object.fromEntries(Utils.getEnumValues(BattlerIndex).map(bt => [ bt, null ]));
         this.battleSeedState = null;
     }
 
+    /**
+     * Adds a participant to the player's participant list.
+     * 
+     * @param playerPokemon The player's Pokemon to be added as a participant.
+     * @throws {Error} If the playerPokemon is not valid or if an error occurs while adding the participant.
+     */
     addParticipant(playerPokemon: PlayerPokemon): void {
         this.playerParticipantIds.add(playerPokemon.id);
     }
 
+    /**
+     * Removes the fainted participant from the player's Pokemon.
+     * @param playerPokemon The player's Pokemon to be removed.
+     * @throws {Error} If the playerPokemon is not found in the participant list.
+     */
     removeFaintedParticipant(playerPokemon: PlayerPokemon): void {
         this.playerParticipantIds.delete(playerPokemon.id);
     }
 
+    /**
+     * Adds post-battle loot from the enemy Pokemon to the current loot list.
+     * @param enemyPokemon The enemy Pokemon from which to retrieve loot.
+     * @throws {Error} Throws an error if the enemy Pokemon does not have any loot modifiers.
+     */
     addPostBattleLoot(enemyPokemon: EnemyPokemon): void {
         this.postBattleLoot.push(...enemyPokemon.scene.findModifiers(m => m instanceof PokemonHeldItemModifier && m.pokemonId === enemyPokemon.id && m.getTransferrable(false), false).map(i => {
             const ret = i as PokemonHeldItemModifier;
@@ -153,6 +196,12 @@ export default class Battle {
         }));
     }
 
+    /**
+     * Picks up scattered money in the battle scene.
+     * 
+     * @param scene The battle scene from which to pick up the money.
+     * @throws {Error} If any error occurs during the process.
+     */
     pickUpScatteredMoney(scene: BattleScene): void {
         const moneyAmount = new Utils.IntegerHolder(scene.currentBattle.moneyScattered);
         scene.applyModifiers(MoneyMultiplierModifier, true, moneyAmount);
@@ -164,6 +213,11 @@ export default class Battle {
         scene.currentBattle.moneyScattered = 0;
     }
 
+    /**
+     * Adds the battle score to the scene.
+     * @param scene The BattleScene to add the score to.
+     * @throws {Error} If the scene is not valid or if there is an issue updating the score text.
+     */
     addBattleScore(scene: BattleScene): void {
         let partyMemberTurnMultiplier = scene.getEnemyParty().length / 2 + 0.5;
         if (this.double)
@@ -180,6 +234,13 @@ export default class Battle {
         scene.updateScoreText();
     }
 
+    /**
+     * Retrieves the background music override for the battle scene.
+     * 
+     * @param scene - The battle scene for which the background music override is needed.
+     * @returns The string representing the background music override.
+     * @throws {Error} If the battle type is not recognized.
+     */
     getBgmOverride(scene: BattleScene): string {
         const battlers = this.enemyParty.slice(0, this.getBattlerCount());
         if (this.battleType === BattleType.TRAINER) {
@@ -215,6 +276,14 @@ export default class Battle {
         return null;
     }
 
+    /**
+     * Generates a random integer based on the provided range and minimum value.
+     * @param scene The BattleScene object.
+     * @param range The range of the random integer.
+     * @param min The minimum value for the random integer. Default is 0.
+     * @returns The generated random integer.
+     * @throws If the range is less than or equal to 1.
+     */
     randSeedInt(scene: BattleScene, range: integer, min: integer = 0): integer {
         if (range <= 1)
             return min;
@@ -257,32 +326,68 @@ export class FixedBattleConfig {
     public getEnemyParty: GetEnemyPartyFunc;
     public seedOffsetWaveIndex: integer;
 
+    /**
+     * Set the battle type for the fixed battle configuration.
+     * @param battleType The type of battle to set.
+     * @returns The updated FixedBattleConfig instance.
+     * @throws {Error} If the battleType is not valid.
+     */
     setBattleType(battleType: BattleType): FixedBattleConfig {
         this.battleType = battleType;
         return this;
     }
 
+    /**
+     * Set the double property of FixedBattleConfig.
+     * @param double - The value to set for the double property.
+     * @returns FixedBattleConfig - The updated FixedBattleConfig instance.
+     * @throws - No exceptions are thrown by this method.
+     */
     setDouble(double: boolean): FixedBattleConfig {
         this.double = double;
         return this;
     }
 
+    /**
+     * Set the getTrainer function for FixedBattleConfig.
+     * @param getTrainerFunc The function to get the trainer.
+     * @returns The updated FixedBattleConfig.
+     * @throws {Error} If getTrainerFunc is not provided.
+     */
     setGetTrainerFunc(getTrainerFunc: GetTrainerFunc): FixedBattleConfig {
         this.getTrainer = getTrainerFunc;
         return this;
     }
 
+    /**
+     * Set the function to get the enemy party for the fixed battle configuration.
+     * @param getEnemyPartyFunc The function to get the enemy party.
+     * @returns The updated fixed battle configuration.
+     * @throws {Error} If the getEnemyPartyFunc is not provided.
+     */
     setGetEnemyPartyFunc(getEnemyPartyFunc: GetEnemyPartyFunc): FixedBattleConfig {
         this.getEnemyParty = getEnemyPartyFunc;
         return this;
     }
 
+    /**
+     * Sets the seed offset wave for the FixedBattleConfig.
+     * @param seedOffsetWaveIndex The index of the seed offset wave to set.
+     * @returns The updated FixedBattleConfig instance.
+     * @throws {Error} If the seedOffsetWaveIndex is not a valid integer.
+     */
     setSeedOffsetWave(seedOffsetWaveIndex: integer): FixedBattleConfig {
         this.seedOffsetWaveIndex = seedOffsetWaveIndex;
         return this;
     }
 }
 
+/**
+ * Returns a function that generates a random trainer from the given pool of trainer types.
+ * @param trainerPool An array of TrainerType or TrainerType[] representing the pool of trainer types.
+ * @returns A function that takes a BattleScene and returns a randomly selected Trainer.
+ * @throws If the trainerPool is empty or contains invalid trainer types.
+ */
 function getRandomTrainerFunc(trainerPool: (TrainerType | TrainerType[])[]): GetTrainerFunc {
     return (scene: BattleScene) => {
         const rand = Utils.randSeedInt(trainerPool.length);

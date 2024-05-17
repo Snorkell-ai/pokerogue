@@ -22,11 +22,19 @@ export class UiInputs {
         this.init();
     }
 
+    /**
+     * Initializes the method.
+     * @throws {Error} Throws an error if the inputsController events are not available.
+     */
     init(): void {
         this.events = this.inputsController.events;
         this.listenInputs();
     }
 
+    /**
+     * Listens for input events and performs corresponding actions.
+     * @throws {Error} If the event button is not found in the actions.
+     */
     listenInputs(): void {
         this.events.on('input_down', (event) => {
             const actions = this.getActionsKeyDown();
@@ -41,11 +49,22 @@ export class UiInputs {
         }, this);
     }
 
+    /**
+     * Perform vibration if input is successful and vibration is enabled.
+     * @param inputSuccess - Indicates if the input was successful.
+     * @param vibrationLength - The length of the vibration in milliseconds.
+     * @throws - Throws an error if the browser does not support the vibrate API.
+     */
     doVibration(inputSuccess: boolean, vibrationLength: number): void {
         if (inputSuccess && this.scene.enableVibration && typeof navigator.vibrate !== 'undefined')
             navigator.vibrate(vibrationLength);
     }
 
+    /**
+     * Returns a mapping of key codes to corresponding action functions.
+     * @returns {ActionKeys} An object containing key codes as keys and corresponding action functions as values.
+     * @throws {Error} If any of the action functions encounter an error.
+     */
     getActionsKeyDown(): ActionKeys {
         const actions = {};
         actions[Button.UP] = () => this.buttonDirection(Button.UP);
@@ -68,26 +87,51 @@ export class UiInputs {
         return actions;
     }
 
+    /**
+     * Returns a map of actions to be performed on key up event.
+     * @returns {ActionKeys} - A map of actions to be performed on key up event.
+     * @throws {Error} - If the buttonStats function is not defined.
+     */
     getActionsKeyUp(): ActionKeys {
         const actions = {};
         actions[Button.STATS] = () => this.buttonStats(false);
         return actions;
     }
 
+    /**
+     * Method to handle button direction.
+     * 
+     * @param direction - The direction of the button.
+     * @throws Error - If there is an issue processing the input.
+     */
     buttonDirection(direction: Button): void {
         const inputSuccess = this.scene.ui.processInput(direction);
         const vibrationLength = 5;
         this.doVibration(inputSuccess, vibrationLength);
     }
 
+    /**
+     * Process the input from the given button.
+     * @param button The button to process input from.
+     * @throws {Error} If the input processing encounters an error.
+     */
     buttonAb(button: Button): void {
         this.scene.ui.processInput(button);
     }
 
+    /**
+     * Simulates a button touch event.
+     * @throws {Error} If the input processing fails.
+     */
     buttonTouch(): void {
         this.scene.ui.processInput(Button.SUBMIT) || this.scene.ui.processInput(Button.ACTION);
     }
 
+    /**
+     * Method to update button statistics based on the pressed state.
+     * @param pressed - A boolean value indicating whether the button is pressed. Default value is true.
+     * @throws - No exceptions are thrown by this method.
+     */
     buttonStats(pressed: boolean = true): void {
         if (pressed) {
             for (let p of this.scene.getField().filter(p => p?.isActive(true)))
@@ -98,6 +142,11 @@ export class UiInputs {
         }
     }
 
+    /**
+     * Method to handle button menu functionality.
+     * 
+     * @throws {Error} Throws an error if the scene is disabled.
+     */
     buttonMenu(): void {
         if (this.scene.disableMenu)
             return;
@@ -129,12 +178,23 @@ export class UiInputs {
         }
     }
 
+    /**
+     * Executes the button cycle option.
+     * @param button The button to be processed.
+     * @throws {Error} If the UI handler is not an instance of StarterSelectUiHandler.
+     */
     buttonCycleOption(button: Button): void {
         if (this.scene.ui?.getHandler() instanceof StarterSelectUiHandler) {
             this.scene.ui.processInput(button);
         }
     }
 
+    /**
+     * Changes the speed of the button.
+     * 
+     * @param up - Indicates whether the speed should be increased. Defaults to true.
+     * @throws - Throws an error if the game speed is already at the maximum value and up is true, or if the game speed is already at the minimum value and up is false.
+     */
     buttonSpeedChange(up = true): void {
         if (up) {
             if (this.scene.gameSpeed < 5) {

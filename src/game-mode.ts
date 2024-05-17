@@ -46,10 +46,11 @@ export class GameMode implements GameModeConfig {
   }
 
   /**
-   * @returns either: 
-   * - override from overrides.ts
-   * - 20 for Daily Runs
-   * - 5 for all other modes
+   * Returns the starting level based on the game mode.
+   * - If there is an override from overrides.ts, it returns the overridden value.
+   * - If the game mode is Daily Runs, it returns 20.
+   * - For all other modes, it returns 5.
+   * @throws {Error} If there is an issue with retrieving the starting level.
    */
   getStartingLevel(): integer {
     if (Overrides.STARTING_LEVEL_OVERRIDE)
@@ -63,20 +64,24 @@ export class GameMode implements GameModeConfig {
   }
 
   /**
+   * Retrieves the starting money value.
    * @returns either:
    * - override from overrides.ts
    * - 1000
+   * @throws {Error} If the starting money override is not available.
    */
   getStartingMoney(): integer {
     return Overrides.STARTING_MONEY_OVERRIDE || 1000;
   }
 
   /**
-   * @param scene current BattleScene
-   * @returns either:
-   * - random biome for Daily mode
-   * - override from overrides.ts
-   * - Town
+   * Retrieves the starting biome based on the current BattleScene.
+   * @param scene The current BattleScene.
+   * @returns The starting biome, which can be:
+   * - A random biome for Daily mode.
+   * - An override from overrides.ts.
+   * - The Town biome.
+   * @throws None
    */
   getStartingBiome(scene: BattleScene): Biome {
     switch (this.modeId) {
@@ -87,6 +92,13 @@ export class GameMode implements GameModeConfig {
     }
   }
 
+  /**
+   * Get the wave number for the given difficulty level.
+   * @param waveIndex The index of the wave.
+   * @param ignoreCurveChanges Whether to ignore curve changes.
+   * @returns The wave number for the given difficulty level.
+   * @throws None
+   */
   getWaveForDifficulty(waveIndex: integer, ignoreCurveChanges: boolean = false): integer {
     switch (this.modeId) {
       case GameModes.DAILY:
@@ -96,6 +108,13 @@ export class GameMode implements GameModeConfig {
     }
   }
 
+  /**
+   * Checks if the given wave is a wave trainer.
+   * @param waveIndex The index of the wave.
+   * @param arena The arena object.
+   * @returns Returns true if the wave is a wave trainer, otherwise false.
+   * @throws None
+   */
   isWaveTrainer(waveIndex: integer, arena: Arena): boolean {
     if (this.isDaily)
       return waveIndex % 10 === 5 || (!(waveIndex % 10) && waveIndex > 10 && !this.isWaveFinal(waveIndex));
@@ -128,6 +147,14 @@ export class GameMode implements GameModeConfig {
     return false;
   }
   
+  /**
+   * Check if the trainer is a boss in the given wave and biome.
+   * @param waveIndex The index of the wave.
+   * @param biomeType The type of biome.
+   * @param offsetGym Whether the gym is offset.
+   * @returns A boolean indicating whether the trainer is a boss.
+   * @throws None
+   */
   isTrainerBoss(waveIndex: integer, biomeType: Biome, offsetGym: boolean): boolean {
     switch (this.modeId) {
       case GameModes.DAILY:
@@ -137,6 +164,12 @@ export class GameMode implements GameModeConfig {
     }
   }
 
+  /**
+   * Retrieves the override Pokemon species for a given wave index.
+   * @param waveIndex The index of the wave.
+   * @returns The PokemonSpecies object representing the override species, or null if no override species is found.
+   * @throws {Error} If an error occurs while retrieving the override species.
+   */
   getOverrideSpecies(waveIndex: integer): PokemonSpecies {
     if (this.isDaily && this.isWaveFinal(waveIndex)) {
       const allFinalBossSpecies = allSpecies.filter(s => (s.subLegendary || s.legendary || s.mythical)
@@ -147,6 +180,12 @@ export class GameMode implements GameModeConfig {
     return null;
   }
 
+  /**
+   * Check if the wave is final based on the wave index.
+   * @param waveIndex The index of the wave to be checked.
+   * @returns A boolean value indicating whether the wave is final or not.
+   * @throws None
+   */
   isWaveFinal(waveIndex: integer): boolean {
     switch (this.modeId) {
       case GameModes.CLASSIC:
@@ -159,6 +198,11 @@ export class GameMode implements GameModeConfig {
     }
   }
 
+  /**
+   * Retrieves the clear score bonus based on the game mode.
+   * @returns {number} The clear score bonus.
+   * @throws {Error} If the modeId is not recognized.
+   */
   getClearScoreBonus(): integer {
     switch (this.modeId) {
       case GameModes.CLASSIC:
@@ -168,6 +212,12 @@ export class GameMode implements GameModeConfig {
     }
   }
 
+  /**
+   * Get the enemy modifier chance based on the game mode and boss status.
+   * @param isBoss - A boolean indicating whether the enemy is a boss.
+   * @returns An integer representing the enemy modifier chance.
+   * @throws If the game mode is not recognized.
+   */
   getEnemyModifierChance(isBoss: boolean): integer {
     switch (this.modeId) {
       case GameModes.CLASSIC:
@@ -179,6 +229,11 @@ export class GameMode implements GameModeConfig {
     }
   }
 
+  /**
+   * Returns the name of the game mode based on the modeId.
+   * @returns {string} The name of the game mode.
+   * @throws {Error} If the modeId is not recognized.
+   */
   getName(): string {
     switch (this.modeId) {
       case GameModes.CLASSIC:

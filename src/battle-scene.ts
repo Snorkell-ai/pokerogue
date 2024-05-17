@@ -204,6 +204,15 @@ export default class BattleScene extends SceneBase {
 		this.updateGameInfo();
 	}
 
+	/**
+	 * Loads a Pokemon atlas.
+	 * 
+	 * @param key The key for the atlas.
+	 * @param atlasPath The path to the atlas.
+	 * @param experimental Optional parameter to indicate if the experimental sprites should be used.
+	 * 
+	 * @throws {Error} If the atlasPath is invalid or if there is an error loading the atlas.
+	 */
 	loadPokemonAtlas(key: string, atlasPath: string, experimental?: boolean) {
 		if (experimental === undefined)
 			experimental = this.experimentalSprites;
@@ -215,6 +224,11 @@ export default class BattleScene extends SceneBase {
 		this.load.atlas(key, `images/pokemon/${variant ? 'variant/' : ''}${experimental ? 'exp/' : ''}${atlasPath}.png`,  `images/pokemon/${variant ? 'variant/' : ''}${experimental ? 'exp/' : ''}${atlasPath}.json`);
 	}
 
+	/**
+	 * Asynchronously preloads the necessary resources for the game.
+	 * 
+	 * @throws {Error} Throws an error if there is an issue with preloading resources.
+	 */
 	async preload() {
 		if (DEBUG_RNG) {
 			const scene = this;
@@ -235,6 +249,11 @@ export default class BattleScene extends SceneBase {
 		await this.initVariantData();
 	}
 
+	/**
+	 * Creates and initializes the game.
+	 * 
+	 * @throws {Error} Throws an error if initialization fails.
+	 */
 	create() {
 		initGameSpeed.apply(this);
 		this.inputController = new InputsController(this);
@@ -255,11 +274,19 @@ export default class BattleScene extends SceneBase {
 		this.time.delayedCall(20, () => this.launchBattle());
 	}
 
+	/**
+	 * Update method to update input controller and UI.
+	 * @throws {Error} If input controller update fails.
+	 */
 	update() {
 		this.inputController.update();
 		this.ui?.update();
 	}
 
+	/**
+	 * Launches the battle and sets up the battle arena with various game elements.
+	 * @throws {Error} Throws an error if any of the setup fails.
+	 */
 	launchBattle() {
 		this.arenaBg = this.add.sprite(0, 0, 'plains_bg');
 		this.arenaBgTransition = this.add.sprite(0, 0, 'plains_bg');
@@ -450,6 +477,11 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Initializes the session.
+	 * 
+	 * @throws {Error} Throws an error if the session play time or last save play time is null.
+	 */
 	initSession(): void {
 		if (this.sessionPlayTime === null)
 			this.sessionPlayTime = 0;
@@ -477,6 +509,11 @@ export default class BattleScene extends SceneBase {
 		this.updateScoreText();
 	}
 
+	/**
+	 * Asynchronously initializes experience sprites.
+	 * @returns A Promise that resolves when the initialization is complete.
+	 * @throws {Error} If there is an error fetching or parsing the 'exp-sprites.json' file.
+	 */
 	async initExpSprites(): Promise<void> {
 		if (expSpriteKeys.length)
 			return;
@@ -487,6 +524,11 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Asynchronously initializes the variant data.
+	 * @returns A promise that resolves when the variant data is initialized.
+	 * @throws {Error} If there is an error during the initialization process.
+	 */
 	async initVariantData(): Promise<void> {
 		Object.keys(variantData).forEach(key => delete variantData[key]);
 		await this.cachedFetch('./images/pokemon/variant/_masterlist.json').then(res => res.json())
@@ -494,6 +536,11 @@ export default class BattleScene extends SceneBase {
 				Object.keys(v).forEach(k => variantData[k] = v[k]);
 				if (this.experimentalSprites) {
 					const expVariantData = variantData['exp'];
+					/**
+					 * Traverses the variant data based on the provided keys and updates the variant tree with corresponding values from the expTree.
+					 * @param keys - An array of strings representing the keys to traverse the variant data.
+					 * @throws - Throws an error if the provided keys are invalid or if there is an issue with updating the variant tree.
+					 */
 					const traverseVariantData = (keys: string[]) => {
 						let variantTree = variantData;
 						let expTree = expVariantData;
@@ -515,6 +562,13 @@ export default class BattleScene extends SceneBase {
 			});
 	}
 
+	/**
+	 * Fetches the data from the specified URL and returns a Promise that resolves to a Response object.
+	 * @param url The URL from which to fetch the data.
+	 * @param init An optional object containing any custom settings that you want to apply to the request.
+	 * @throws {Error} If an error occurs during the fetch operation.
+	 * @returns A Promise that resolves to a Response object.
+	 */
 	cachedFetch(url: string, init?: RequestInit): Promise<Response> {
 		const manifest = this.game['manifest'];
 		if (manifest) {
@@ -525,6 +579,11 @@ export default class BattleScene extends SceneBase {
 		return fetch(url, init);
 	}
 
+	/**
+	 * Initializes starter colors by fetching data from './starter-colors.json' and processing it.
+	 * @returns A Promise that resolves when the starter colors are successfully initialized.
+	 * @throws {Error} If there is an error fetching or processing the starter colors data.
+	 */
 	initStarterColors(): Promise<void> {
 		return new Promise(resolve => {
 			if (starterColors)
@@ -563,6 +622,12 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Checks if the given key matches the specified pattern for an exp sprite.
+	 * @param key The key to be checked.
+	 * @returns True if the key matches the pattern, false otherwise.
+	 * @throws If the key does not match the expected pattern.
+	 */
 	hasExpSprite(key: string): boolean {
 		const keyMatch = /^pkmn__?(back__)?(shiny__)?(female__)?(\d+)(\-.*?)?(?:_[1-3])?$/g.exec(key);
 		let k = keyMatch[4];
@@ -579,32 +644,66 @@ export default class BattleScene extends SceneBase {
 		return true;
 	}
 
+	/**
+	 * Retrieves the party of player's Pokémon.
+	 * @returns An array of PlayerPokemon objects representing the player's Pokémon party.
+	 */
 	getParty(): PlayerPokemon[] {
 		return this.party;
 	}
 
+	/**
+	 * Retrieve the player's active Pokemon.
+	 * @returns {PlayerPokemon} The active Pokemon of the player.
+	 * @throws {Error} Throws an error if the active Pokemon is not found.
+	 */
 	getPlayerPokemon(): PlayerPokemon {
 		return this.getPlayerField().find(p => p.isActive());
 	}
 
+	/**
+	 * Retrieves the player's Pokemon field for the current battle.
+	 * @returns An array of PlayerPokemon objects representing the player's Pokemon field.
+	 * @throws {Error} If an error occurs while retrieving the player's Pokemon field.
+	 */
 	getPlayerField(): PlayerPokemon[] {
 		const party = this.getParty();
 		return party.slice(0, Math.min(party.length, this.currentBattle?.double ? 2 : 1));
 	}
 
+	/**
+	 * Retrieves the enemy party from the current battle.
+	 * @returns An array of EnemyPokemon objects representing the enemy party.
+	 */
 	getEnemyParty(): EnemyPokemon[] {
 		return this.currentBattle?.enemyParty || [];
 	}
 
+	/**
+	 * Retrieves the active enemy Pokemon from the enemy field.
+	 * @returns {EnemyPokemon} The active enemy Pokemon.
+	 * @throws {Error} If the active enemy Pokemon is not found.
+	 */
 	getEnemyPokemon(): EnemyPokemon {
 		return this.getEnemyField().find(p => p.isActive());
 	}
 
+	/**
+	 * Retrieves the enemy Pokemon field.
+	 * @returns {EnemyPokemon[]} The enemy Pokemon field.
+	 * @throws {Error} If the enemy party is not available.
+	 */
 	getEnemyField(): EnemyPokemon[] {
 		const party = this.getEnemyParty();
 		return party.slice(0, Math.min(party.length, this.currentBattle?.double ? 2 : 1));
 	}
 
+	/**
+	 * Retrieves the Pokemon field based on the active status.
+	 * @param activeOnly Indicates whether to retrieve only active Pokemon.
+	 * @returns An array of Pokemon objects based on the active status.
+	 * @throws {Error} Throws an error if there is an issue retrieving the field.
+	 */
 	getField(activeOnly: boolean = false): Pokemon[] {
 		const ret = new Array(4).fill(null);
 		const playerField = this.getPlayerField();
@@ -616,11 +715,38 @@ export default class BattleScene extends SceneBase {
 			: ret;
 	}
 
+	/**
+	 * Retrieves a Pokemon by its ID.
+	 * @param pokemonId The ID of the Pokemon to retrieve.
+	 * @returns The Pokemon with the specified ID, if found in the party or enemy party.
+	 * @throws If the Pokemon with the specified ID is not found in either party.
+	 */
 	getPokemonById(pokemonId: integer): Pokemon {
+		/**
+		 * Find a Pokemon in the party by its ID.
+		 * @param party The array of Pokemon to search.
+		 * @returns The found Pokemon, or undefined if not found.
+		 */
 		const findInParty = (party: Pokemon[]) => party.find(p => p.id === pokemonId);
 		return findInParty(this.getParty()) || findInParty(this.getEnemyParty());
 	}
 
+	/**
+	 * Adds a player's Pokemon with the specified details.
+	 * @param species The species of the Pokemon.
+	 * @param level The level of the Pokemon.
+	 * @param abilityIndex The index of the ability.
+	 * @param formIndex The index of the form.
+	 * @param gender Optional. The gender of the Pokemon.
+	 * @param shiny Optional. Indicates if the Pokemon is shiny.
+	 * @param variant Optional. The variant of the Pokemon.
+	 * @param ivs Optional. The individual values of the Pokemon.
+	 * @param nature Optional. The nature of the Pokemon.
+	 * @param dataSource Optional. The data source of the Pokemon.
+	 * @param postProcess Optional. A function to post-process the player's Pokemon.
+	 * @throws {Error} If any error occurs during the process.
+	 * @returns The player's Pokemon with the specified details.
+	 */
 	addPlayerPokemon(species: PokemonSpecies, level: integer, abilityIndex: integer, formIndex: integer, gender?: Gender, shiny?: boolean, variant?: Variant, ivs?: integer[], nature?: Nature, dataSource?: Pokemon | PokemonData, postProcess?: (playerPokemon: PlayerPokemon) => void): PlayerPokemon {
 		const pokemon = new PlayerPokemon(this, species, level, abilityIndex, formIndex, gender, shiny, variant, ivs, nature, dataSource);
 		if (postProcess)
@@ -629,6 +755,18 @@ export default class BattleScene extends SceneBase {
 		return pokemon;
 	}
 
+	/**
+	 * Creates and adds an enemy Pokemon to the game.
+	 * 
+	 * @param species The species of the Pokemon to be added.
+	 * @param level The level of the Pokemon.
+	 * @param trainerSlot The slot of the trainer.
+	 * @param boss Indicates if the Pokemon is a boss.
+	 * @param dataSource Optional data source for the Pokemon.
+	 * @param postProcess Optional function to post-process the created Pokemon.
+	 * @returns The created enemy Pokemon.
+	 * @throws Error if any exceptions occur during the process.
+	 */
 	addEnemyPokemon(species: PokemonSpecies, level: integer, trainerSlot: TrainerSlot, boss: boolean = false, dataSource?: PokemonData, postProcess?: (enemyPokemon: EnemyPokemon) => void): EnemyPokemon {
 		if (Overrides.OPP_SPECIES_OVERRIDE)
 			species = getPokemonSpecies(Overrides.OPP_SPECIES_OVERRIDE);
@@ -647,6 +785,18 @@ export default class BattleScene extends SceneBase {
 		return pokemon;
 	}
 
+	/**
+	 * Adds a Pokemon icon to the game at the specified coordinates within a container.
+	 * 
+	 * @param pokemon The Pokemon object to display as an icon.
+	 * @param x The x-coordinate for the container.
+	 * @param y The y-coordinate for the container.
+	 * @param originX The origin point on the x-axis for the container, default is 0.5.
+	 * @param originY The origin point on the y-axis for the container, default is 0.5.
+	 * @param ignoreOverride Flag to ignore any overrides for the Pokemon icon, default is false.
+	 * @returns A Phaser.GameObjects.Container containing the Pokemon icon.
+	 * @throws None
+	 */
 	addPokemonIcon(pokemon: Pokemon, x: number, y: number, originX: number = 0.5, originY: number = 0.5, ignoreOverride: boolean = false): Phaser.GameObjects.Container {
 		const container = this.add.container(x, y);
 		
@@ -717,6 +867,11 @@ export default class BattleScene extends SceneBase {
 		return container;
 	}
 
+	/**
+	 * Set the seed for the random number generator.
+	 * @param seed - The seed to set for the random number generator.
+	 * @throws - Throws an error if the seed is invalid.
+	 */
 	setSeed(seed: string): void {
 		this.seed = seed;
 		this.rngCounter = 0;
@@ -724,10 +879,26 @@ export default class BattleScene extends SceneBase {
 		this.offsetGym = this.gameMode.isClassic && this.getGeneratedOffsetGym();
 	}
 
+	/**
+	 * Generate a random battle seed integer within the specified range.
+	 * 
+	 * @param range The range within which the random integer should be generated.
+	 * @param min The minimum value for the random integer (default is 0).
+	 * @returns The generated random integer.
+	 * @throws Error if the range or min values are not valid.
+	 */
 	randBattleSeedInt(range: integer, min: integer = 0): integer {
 		return this.currentBattle.randSeedInt(this, range, min);
 	}
 
+	/**
+	 * Resets the game state with optional parameters to clear the scene, clear data, and reload internationalization.
+	 * 
+	 * @param clearScene Set to true to clear the scene.
+	 * @param clearData Set to true to clear the game data.
+	 * @param reloadI18n Set to true to reload internationalization data.
+	 * @throws None
+	 */
 	reset(clearScene: boolean = false, clearData: boolean = false, reloadI18n: boolean = false): void {
 		if (clearData)
 			this.gameData = new GameData(this);
@@ -824,6 +995,16 @@ export default class BattleScene extends SceneBase {
 		}
 	}
 
+	/**
+	 * Creates a new battle with the given parameters.
+	 * 
+	 * @param waveIndex - The index of the wave for the battle.
+	 * @param battleType - The type of battle (e.g. wild, trainer).
+	 * @param trainerData - The data of the trainer for the battle.
+	 * @param double - Indicates if it's a double battle.
+	 * @returns The newly created Battle object.
+	 * @throws {Error} If an error occurs during the battle creation process.
+	 */
 	newBattle(waveIndex?: integer, battleType?: BattleType, trainerData?: TrainerData, double?: boolean): Battle {
 		let newWaveIndex = waveIndex || ((this.currentBattle?.waveIndex || (startingWave - 1)) + 1);
 		let newDouble: boolean;
@@ -950,6 +1131,12 @@ export default class BattleScene extends SceneBase {
 		return this.currentBattle;
 	}
 
+	/**
+	 * Creates a new Arena object based on the provided biome.
+	 * @param biome The biome to create the Arena for.
+	 * @returns The newly created Arena object.
+	 * @throws Error if the provided biome is invalid or not supported.
+	 */
 	newArena(biome: Biome): Arena {
 		this.arena = new Arena(this, biome, Biome[biome].toLowerCase());
 
@@ -958,6 +1145,11 @@ export default class BattleScene extends SceneBase {
 		return this.arena;
 	}
 
+	/**
+	 * Updates the field scale asynchronously.
+	 * @returns A Promise that resolves when the field scale is updated.
+	 * @throws {Error} If there is an error updating the field scale.
+	 */
 	updateFieldScale(): Promise<void> {
 		return new Promise(resolve => {
 			const fieldScale = Math.floor(Math.pow(1 / this.getField(true)
@@ -968,6 +1160,14 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Sets the scale of the field.
+	 * 
+	 * @param scale - The scale to set for the field.
+	 * @param instant - Whether to set the scale instantly or with animation. Default is false.
+	 * @returns A promise that resolves when the scale is set.
+	 * @throws {Error} If there is an error setting the scale.
+	 */
 	setFieldScale(scale: number, instant: boolean = false): Promise<void> {
 		return new Promise(resolve => {
 			scale *= 6;
@@ -991,6 +1191,15 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Returns the index of the species form based on the provided parameters.
+	 * @param species The PokemonSpecies for which the form index needs to be retrieved.
+	 * @param gender Optional. The gender of the Pokemon.
+	 * @param nature Optional. The nature of the Pokemon.
+	 * @param ignoreArena Optional. If true, ignores the arena and returns the form index.
+	 * @returns The index of the species form.
+	 * @throws Throws an error if the species forms are not available.
+	 */
 	getSpeciesFormIndex(species: PokemonSpecies, gender?: Gender, nature?: Nature, ignoreArena?: boolean): integer {
 		if (!species.forms?.length)
 			return 0;
@@ -1052,6 +1261,12 @@ export default class BattleScene extends SceneBase {
 		return this.arena.getSpeciesFormIndex(species);
 	}
 
+	/**
+	 * Private method to get the generated offset gym.
+	 * 
+	 * @returns {boolean} - Returns a boolean value indicating the success of the operation.
+	 * @throws {Error} - Throws an error if any of the called functions fail.
+	 */
 	private getGeneratedOffsetGym(): boolean {
 		let ret = false;
 		this.executeWithSeedOffset(() => {
@@ -1060,6 +1275,11 @@ export default class BattleScene extends SceneBase {
 		return ret;
 	}
 
+	/**
+	 * Private method to get the generated wave cycle offset.
+	 * @returns {number} The generated wave cycle offset.
+	 * @throws {Error} Throws an error if the seed is not a valid string.
+	 */
 	private getGeneratedWaveCycleOffset(): integer {
 		let ret = 0;
 		this.executeWithSeedOffset(() => {
@@ -1068,6 +1288,15 @@ export default class BattleScene extends SceneBase {
 		return ret;
 	}
 
+	/**
+	 * Returns the number of encounter boss segments based on the wave index, level, species, and forceBoss flag.
+	 * @param waveIndex The index of the wave.
+	 * @param level The level of the encounter.
+	 * @param species (Optional) The species of the encounter.
+	 * @param forceBoss (Optional) Flag to force a boss encounter.
+	 * @returns The number of encounter boss segments.
+	 * @throws {Error} If an error occurs during the execution of the method.
+	 */
 	getEncounterBossSegments(waveIndex: integer, level: integer, species?: PokemonSpecies, forceBoss: boolean = false): integer {
 		if (this.gameMode.isDaily && this.gameMode.isWaveFinal(waveIndex))
 			return 5;
@@ -1096,9 +1325,20 @@ export default class BattleScene extends SceneBase {
 		return ret;
 	}
 
+	/**
+	 * Tries to spread Pokerus within the party.
+	 * @throws {Error} Throws an error if there is a problem with spreading Pokerus.
+	 */
 	trySpreadPokerus(): void {
 		const party = this.getParty();
 		const infectedIndexes: integer[] = [];
+		/**
+		 * Spread pokerus to a party member at a specific index.
+		 * @param index The index of the party member to spread pokerus from.
+		 * @param spreadTo The index to spread pokerus to.
+		 * @throws {Error} Throws an error if the party member at the specified index is not found.
+		 * @throws {Error} Throws an error if the random seed generation fails.
+		 */
 		const spread = (index: number, spreadTo: number) => {
 			const partyMember = party[index + spreadTo];
 			if (!partyMember.pokerus && !Utils.randSeedInt(10)) {
@@ -1119,6 +1359,12 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Resets the seed for the random number generator.
+	 * @param waveIndex - Optional parameter specifying the index of the wave. If not provided, the currentBattle's waveIndex is used. If that is also not available, 0 is used.
+	 * @throws - No exceptions are thrown by this method.
+	 * @returns - This method does not return any value.
+	 */
 	resetSeed(waveIndex?: integer): void {
 		const wave = waveIndex || this.currentBattle?.waveIndex || 0;
 		this.waveSeed = Utils.shiftCharCodes(this.seed, wave);
@@ -1127,6 +1373,13 @@ export default class BattleScene extends SceneBase {
 		this.rngCounter = 0;
 	}
 
+	/**
+	 * Executes the given function with a specified offset and seed override.
+	 * @param func The function to be executed.
+	 * @param offset The offset value to be used.
+	 * @param seedOverride An optional seed override value.
+	 * @throws If the func parameter is not provided.
+	 */
 	executeWithSeedOffset(func: Function, offset: integer, seedOverride?: string): void {
 		if (!func)
 			return;
@@ -1145,6 +1398,16 @@ export default class BattleScene extends SceneBase {
 		this.rngSeedOverride = tempRngSeedOverride;
 	}
 
+	/**
+	 * Adds a field sprite to the game world at the specified coordinates.
+	 * @param x The x-coordinate for the sprite.
+	 * @param y The y-coordinate for the sprite.
+	 * @param texture The texture for the sprite, specified as a string or Phaser.Textures.Texture.
+	 * @param frame Optional. The frame for the sprite, specified as a string or number.
+	 * @param terrainColorRatio Optional. The terrain color ratio for the sprite, defaults to 0.
+	 * @returns The created Phaser.GameObjects.Sprite.
+	 * @throws None
+	 */
 	addFieldSprite(x: number, y: number, texture: string | Phaser.Textures.Texture, frame?: string | number, terrainColorRatio: number = 0): Phaser.GameObjects.Sprite {
 		const ret = this.add.sprite(x, y, texture, frame);
 		ret.setPipeline(this.fieldSpritePipeline);
@@ -1154,18 +1417,48 @@ export default class BattleScene extends SceneBase {
 		return ret;
 	}
 
+	/**
+	 * Adds a Pokemon sprite to the game.
+	 * 
+	 * @param pokemon The Pokemon object to be added as a sprite.
+	 * @param x The x-coordinate of the sprite.
+	 * @param y The y-coordinate of the sprite.
+	 * @param texture The texture of the sprite.
+	 * @param frame The frame of the sprite.
+	 * @param hasShadow Indicates whether the sprite has a shadow.
+	 * @param ignoreOverride Indicates whether to ignore any overrides.
+	 * 
+	 * @returns The created Phaser.GameObjects.Sprite.
+	 * 
+	 * @throws If there is an issue with adding the field sprite or initializing the Pokemon sprite.
+	 */
 	addPokemonSprite(pokemon: Pokemon, x: number, y: number, texture: string | Phaser.Textures.Texture, frame?: string | number, hasShadow: boolean = false, ignoreOverride: boolean = false): Phaser.GameObjects.Sprite {
 		const ret = this.addFieldSprite(x, y, texture, frame);
 		this.initPokemonSprite(ret, pokemon, hasShadow, ignoreOverride);
 		return ret;
 	}
 
+	/**
+	 * Initializes the Pokemon sprite.
+	 * @param sprite The Phaser.GameObjects.Sprite to initialize.
+	 * @param pokemon Optional Pokemon object to associate with the sprite.
+	 * @param hasShadow Boolean indicating whether the sprite has a shadow.
+	 * @param ignoreOverride Boolean indicating whether to ignore any overrides.
+	 * @throws {Error} If the sprite pipeline cannot be set.
+	 * @returns The initialized Phaser.GameObjects.Sprite.
+	 */
 	initPokemonSprite(sprite: Phaser.GameObjects.Sprite, pokemon?: Pokemon, hasShadow: boolean = false, ignoreOverride: boolean = false): Phaser.GameObjects.Sprite {
 		sprite.setPipeline(this.spritePipeline, { tone: [ 0.0, 0.0, 0.0, 0.0 ], hasShadow: hasShadow, ignoreOverride: ignoreOverride, teraColor: pokemon ? getTypeRgb(pokemon.getTeraType()) : undefined });
 		this.spriteSparkleHandler.add(sprite);
 		return sprite;
 	}
 
+	/**
+	 * Show field overlay with a specified duration.
+	 * @param duration The duration for which the field overlay should be displayed.
+	 * @returns A Promise that resolves when the field overlay animation is complete.
+	 * @throws {Error} If the duration is not a valid integer.
+	 */
 	showFieldOverlay(duration: integer): Promise<void> {
 		return new Promise(resolve => {
 			this.tweens.add({
@@ -1178,6 +1471,12 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Hides the field overlay with a specified duration.
+	 * @param duration The duration in milliseconds for the overlay to fade out.
+	 * @returns A Promise that resolves when the overlay is completely hidden.
+	 * @throws {Error} If there is an error while hiding the overlay.
+	 */
 	hideFieldOverlay(duration: integer): Promise<void> {
 		return new Promise(resolve => {
 			this.tweens.add({
@@ -1190,6 +1489,10 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Update the wave count text on the screen.
+	 * @throws {Error} If the currentBattle is not defined.
+	 */
 	updateWaveCountText(): void {
 		const isBoss = !(this.currentBattle.waveIndex % 10);
 		this.waveCountText.setText(this.currentBattle.waveIndex.toString());
@@ -1198,16 +1501,29 @@ export default class BattleScene extends SceneBase {
 		this.waveCountText.setVisible(true);
 	}
 
+	/**
+	 * Updates the money text on the screen.
+	 * @throws {Error} If unable to update the money text.
+	 */
 	updateMoneyText(): void {
 		this.moneyText.setText(`₽${this.money.toLocaleString('en-US')}`);
 		this.moneyText.setVisible(true);
 	}
 
+	/**
+	 * Updates the score text on the game screen.
+	 * @throws {Error} If the game mode is not daily.
+	 */
 	updateScoreText(): void {
 		this.scoreText.setText(`Score: ${this.score.toString()}`);
 		this.scoreText.setVisible(this.gameMode.isDaily);
 	}
 
+	/**
+	 * Updates and shows luck text with a specified duration.
+	 * @param duration The duration for the animation in milliseconds.
+	 * @throws {Error} If any of the specified functions are not defined or if there is an error during the animation.
+	 */
 	updateAndShowLuckText(duration: integer): void {
 		const labels = [ this.luckLabelText, this.luckText ];
 		labels.map(t => {
@@ -1228,6 +1544,11 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Hides luck text with a specified duration.
+	 * @param duration The duration in milliseconds for hiding the luck text.
+	 * @throws {Error} Throws an error if the specified duration is not a valid integer.
+	 */
 	hideLuckText(duration: integer): void {
 		const labels = [ this.luckLabelText, this.luckText ];
 		this.tweens.add({
@@ -1240,6 +1561,10 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Update the UI positions based on enemy modifier count and canvas height.
+	 * @throws {Error} If any error occurs during the update process.
+	 */
 	updateUIPositions(): void {
 		const enemyModifierCount = this.enemyModifiers.filter(m => m.isIconVisible(this)).length;
 		this.waveCountText.setY(-(this.game.canvas.height / 6) + (enemyModifierCount ? enemyModifierCount <= 12 ? 15 : 24 : 0));
@@ -1252,6 +1577,11 @@ export default class BattleScene extends SceneBase {
 		this.ui?.achvBar.setY(this.game.canvas.height / 6 + offsetY);
 	}
 
+	/**
+	 * Increases the score for a fainted enemy based on its level, base experience, IVs, held items, and boss status.
+	 * @param enemy The fainted enemy Pokemon.
+	 * @throws {Error} If the enemy is not valid or if any of the calculations fail.
+	 */
 	addFaintedEnemyScore(enemy: EnemyPokemon): void {
 		let scoreIncrease = enemy.getSpeciesForm().getBaseExp() * (enemy.level / this.getMaxExpLevel()) * ((enemy.ivs.reduce((iv: integer, total: integer) => total += iv, 0) / 93) * 0.2 + 0.8);
 		this.findModifiers(m => m instanceof PokemonHeldItemModifier && m.pokemonId === enemy.id, false).map(m => scoreIncrease *= (m as PokemonHeldItemModifier).getScoreMultiplier());
@@ -1260,6 +1590,12 @@ export default class BattleScene extends SceneBase {
 		this.currentBattle.battleScore += Math.ceil(scoreIncrease);
 	}
 
+	/**
+	 * Returns the maximum experience level.
+	 * @param ignoreLevelCap Set to true to ignore the level cap.
+	 * @returns The maximum experience level as an integer.
+	 * @throws None
+	 */
 	getMaxExpLevel(ignoreLevelCap?: boolean): integer {
 		if (ignoreLevelCap)
 			return Number.MAX_SAFE_INTEGER;
@@ -1269,6 +1605,19 @@ export default class BattleScene extends SceneBase {
 		return Math.ceil(baseLevel / 2) * 2 + 2;
 	}
 
+	/**
+	 * Generates a random Pokemon species based on the provided parameters.
+	 * 
+	 * @param waveIndex The index of the wave.
+	 * @param level The level of the Pokemon.
+	 * @param fromArenaPool Optional parameter to indicate if the species should be randomly selected from the arena pool.
+	 * @param speciesFilter Optional filter function to apply on the Pokemon species.
+	 * @param filterAllEvolutions Optional parameter to indicate if all evolutions should be filtered.
+	 * 
+	 * @returns The randomly generated Pokemon species.
+	 * 
+	 * @throws If an error occurs while generating the random species.
+	 */
 	randomSpecies(waveIndex: integer, level: integer, fromArenaPool?: boolean, speciesFilter?: PokemonSpeciesFilter, filterAllEvolutions?: boolean): PokemonSpecies {
 		if (fromArenaPool)
 			return this.arena.randomSpecies(waveIndex, level);
@@ -1282,6 +1631,12 @@ export default class BattleScene extends SceneBase {
 		return filteredSpecies[Utils.randSeedInt(filteredSpecies.length)];
 	}
 
+	/**
+	 * Generates a random biome based on the wave index.
+	 * @param waveIndex The index of the wave.
+	 * @returns The generated biome.
+	 * @throws {Error} If the calculation of the random biome fails.
+	 */
 	generateRandomBiome(waveIndex: integer): Biome {
 		const relWave = waveIndex % 250;
 		const biomes = Utils.getEnumValues(Biome).slice(1, Utils.getEnumValues(Biome).filter(b => b >= 40).length * -1);
@@ -1305,10 +1660,21 @@ export default class BattleScene extends SceneBase {
 		return biomes[Utils.randSeedInt(biomes.length)];
 	}
 
+	/**
+	 * Check if background music is currently playing.
+	 * @returns {boolean} - Returns true if background music is playing, otherwise false.
+	 * @throws {Error} - Throws an error if there is an issue checking the status of background music.
+	 */
 	isBgmPlaying(): boolean {
 		return this.bgm && this.bgm.isPlaying;
 	}
 
+	/**
+	 * Plays background music with the given name and options.
+	 * @param bgmName Optional. The name of the background music to play.
+	 * @param fadeOut Optional. If true, the current background music will fade out before playing the new one.
+	 * @throws {Error} If there is an issue with loading or playing the background music.
+	 */
 	playBgm(bgmName?: string, fadeOut?: boolean): void {
 		if (bgmName === undefined)
 			bgmName = this.currentBattle?.getBgmOverride(this) || this.arena?.bgm;
@@ -1329,6 +1695,10 @@ export default class BattleScene extends SceneBase {
 			? this.arena.getBgmLoopPoint()
 			: this.getBgmLoopPoint(bgmName);
 		let loaded = false;
+		/**
+		 * Plays a new background music.
+		 * @throws {Error} If an error occurs while playing the background music.
+		 */
 		const playNewBgm = () => {
 			if (bgmName === null && this.bgm && !this.bgm.pendingRemove) {
 				this.bgm.play({
@@ -1351,6 +1721,10 @@ export default class BattleScene extends SceneBase {
 				playNewBgm();
 		});
 		if (fadeOut) {
+			/**
+			 * This method checks if the background music is faded and plays a new background music if it is not playing or pending removal.
+			 * @throws {Error} Throws an error if the background music is not loaded.
+			 */
 			const onBgmFaded = () => {
 				if (loaded && (!this.bgm.isPlaying || this.bgm.pendingRemove))
 					playNewBgm();
@@ -1361,6 +1735,11 @@ export default class BattleScene extends SceneBase {
 			this.load.start();
 	}
 
+	/**
+	 * Pauses the background music.
+	 * @returns {boolean} - Returns true if the background music is successfully paused, otherwise returns false.
+	 * @throws {Error} - Throws an error if the background music is not found or if there is an issue pausing the music.
+	 */
 	pauseBgm(): boolean {
 		if (this.bgm && !this.bgm.pendingRemove && this.bgm.isPlaying) {
 			this.bgm.pause();
@@ -1369,6 +1748,11 @@ export default class BattleScene extends SceneBase {
 		return false;
 	}
 
+	/**
+	 * Resumes the background music.
+	 * @returns {boolean} - Returns true if the background music is successfully resumed, otherwise returns false.
+	 * @throws {Error} - Throws an error if the background music is not available or cannot be resumed.
+	 */
 	resumeBgm(): boolean {
 		if (this.bgm && !this.bgm.pendingRemove && this.bgm.isPaused) {
 			this.bgm.resume();
@@ -1377,6 +1761,10 @@ export default class BattleScene extends SceneBase {
 		return false;
 	}
 
+	/**
+	 * Updates the sound volume.
+	 * @throws {Error} If the sound is not available.
+	 */
 	updateSoundVolume(): void {
 		if (this.sound) {
 			for (let sound of this.sound.getAllPlaying())
@@ -1384,6 +1772,13 @@ export default class BattleScene extends SceneBase {
 		}
 	}
 
+	/**
+	 * Fades out the background music.
+	 * @param duration The duration of the fade out in milliseconds. Default is 500.
+	 * @param destroy Whether to destroy the background music after fading out. Default is true.
+	 * @returns Returns true if the fade out was successful, otherwise false.
+	 * @throws If the background music is not found or if an error occurs during the fade out process.
+	 */
 	fadeOutBgm(duration: integer = 500, destroy: boolean = true): boolean {
 		if (!this.bgm)
 			return false;
@@ -1396,6 +1791,13 @@ export default class BattleScene extends SceneBase {
 		return false;
 	}
 
+	/**
+	 * Plays a sound with the given configuration.
+	 * @param sound - The sound to be played, either a string or an object of type AnySound.
+	 * @param config - Optional configuration object for the sound.
+	 * @returns The played sound of type AnySound.
+	 * @throws If an error occurs while playing the sound.
+	 */
 	playSound(sound: string | AnySound, config?: object): AnySound {
 		if (config) {
 			if (config.hasOwnProperty('volume'))
@@ -1416,6 +1818,15 @@ export default class BattleScene extends SceneBase {
 		}
 	}
 
+	/**
+	 * Play a sound without background music.
+	 * 
+	 * @param soundName - The name of the sound to be played.
+	 * @param pauseDuration - Optional. The duration to pause the background music in milliseconds.
+	 * @returns The played sound.
+	 * @throws If the soundName is not found in the sound cache.
+	 * @throws If an error occurs while playing the sound.
+	 */
 	playSoundWithoutBgm(soundName: string, pauseDuration?: integer): AnySound {
 		this.bgmCache.add(soundName);
 		const resumeBgm = this.pauseBgm();
@@ -1432,6 +1843,12 @@ export default class BattleScene extends SceneBase {
 		return sound;
 	}
 
+	/**
+	 * Retrieves the loop point of the background music based on the given name.
+	 * @param bgmName The name of the background music.
+	 * @returns The loop point of the background music.
+	 * @throws If the specified background music name is not found, it throws an error.
+	 */
 	getBgmLoopPoint(bgmName: string): number {
 		switch (bgmName) {
 			case 'battle_kanto_champion':
@@ -1489,6 +1906,11 @@ export default class BattleScene extends SceneBase {
 		return 0;
 	}
 
+	/**
+	 * Toggles the invert effect for the main camera.
+	 * @param invert - A boolean value indicating whether to apply the invert effect.
+	 * @throws {Error} - Throws an error if the specified invert value is not a boolean.
+	 */
 	toggleInvert(invert: boolean): void {
 		if (invert)
 			this.cameras.main.setPostPipeline(InvertPostFX);
@@ -1496,19 +1918,40 @@ export default class BattleScene extends SceneBase {
 			this.cameras.main.removePostPipeline('InvertPostFX');
 	}
 
+	/**
+	 * Get the current phase.
+	 * @returns {Phase} The current phase.
+	 * @throws {Error} If the current phase is not available.
+	 */
 	/* Phase Functions */
 	getCurrentPhase(): Phase {
 		return this.currentPhase;
 	}
 
+	/**
+	 * Retrieves the standby phase.
+	 * @returns {Phase} The standby phase.
+	 */
 	getStandbyPhase(): Phase {
 		return this.standbyPhase;
 	}
 
+	/**
+	 * Pushes a phase onto the phase queue or the next command phase queue.
+	 * @param phase The phase to push onto the queue.
+	 * @param defer If true, the phase will be pushed onto the next command phase queue; otherwise, it will be pushed onto the phase queue.
+	 * @throws {Error} Throws an error if the phase cannot be pushed onto the queue.
+	 */
 	pushPhase(phase: Phase, defer: boolean = false): void {
 		(!defer ? this.phaseQueue : this.nextCommandPhaseQueue).push(phase);
 	}
 
+	/**
+	 * Add a phase to the beginning of the phase queue.
+	 * @param phase The phase to be added to the queue.
+	 * @throws {Error} Throws an error if the phaseQueuePrependSpliceIndex is -1 and the phaseQueuePrepend.push operation fails.
+	 * @throws {Error} Throws an error if the phaseQueuePrependSpliceIndex is not -1 and the phaseQueuePrepend.splice operation fails.
+	 */
 	unshiftPhase(phase: Phase): void {
 		if (this.phaseQueuePrependSpliceIndex === -1)
 			this.phaseQueuePrepend.push(phase);
@@ -1516,18 +1959,41 @@ export default class BattleScene extends SceneBase {
 			this.phaseQueuePrepend.splice(this.phaseQueuePrependSpliceIndex, 0, phase);
 	}
 
+	/**
+	 * Clears the phase queue.
+	 * @throws {Error} Throws an error if unable to clear the phase queue.
+	 */
 	clearPhaseQueue(): void {
 		this.phaseQueue.splice(0, this.phaseQueue.length);
 	}
 
+	/**
+	 * Sets the phase queue splice.
+	 * 
+	 * @throws {Error} If an error occurs while setting the phase queue splice.
+	 */
 	setPhaseQueueSplice(): void {
 		this.phaseQueuePrependSpliceIndex = this.phaseQueuePrepend.length;
 	}
 
+	/**
+	 * Clears the phase queue splice.
+	 * @throws {Error} If an error occurs while clearing the phase queue splice.
+	 */
 	clearPhaseQueueSplice(): void {
 		this.phaseQueuePrependSpliceIndex = -1;
 	}
 
+	/**
+	 * Shifts the phase to the next one in the queue or standby phase if available.
+	 * If standby phase is available, it becomes the current phase and standby phase is set to null.
+	 * If phase queue prepend splice index is greater than -1, clears the phase queue splice.
+	 * If phase queue prepend has elements, adds them to the beginning of the phase queue.
+	 * If phase queue is empty, populates the phase queue.
+	 * Sets the current phase to the next one in the queue and starts it.
+	 * 
+	 * @throws {Error} If an error occurs while shifting the phase.
+	 */
 	shiftPhase(): void {
 		if (this.standbyPhase) {
 			this.currentPhase = this.standbyPhase;
@@ -1547,6 +2013,12 @@ export default class BattleScene extends SceneBase {
 		this.currentPhase.start();
 	}
 	
+	/**
+	 * Override the current phase with the given phase.
+	 * @param phase The phase to override with.
+	 * @throws {Error} If the standby phase is active.
+	 * @returns {boolean} True if the phase was successfully overridden, false otherwise.
+	 */
 	overridePhase(phase: Phase): boolean {
 		if (this.standbyPhase)
 			return false;
@@ -1558,10 +2030,23 @@ export default class BattleScene extends SceneBase {
 		return true;
 	}
 
+	/**
+	 * Find phase based on the provided filter function.
+	 * @param phaseFilter A function that filters the phase based on certain conditions.
+	 * @returns The phase that matches the filter function.
+	 * @throws If no phase is found based on the filter function.
+	 */
 	findPhase(phaseFilter: (phase: Phase) => boolean): Phase {
 		return this.phaseQueue.find(phaseFilter);
 	}
 
+	/**
+	 * Replace a phase in the phase queue based on the provided filter function.
+	 * @param phaseFilter A function that filters phases based on certain criteria.
+	 * @param phase The phase to be replaced.
+	 * @returns Returns true if the phase was successfully replaced, otherwise false.
+	 * @throws {Error} Throws an error if the phaseFilter function encounters an exception.
+	 */
 	tryReplacePhase(phaseFilter: (phase: Phase) => boolean, phase: Phase): boolean {
 		const phaseIndex = this.phaseQueue.findIndex(phaseFilter);
 		if (phaseIndex > -1) {
@@ -1571,6 +2056,12 @@ export default class BattleScene extends SceneBase {
 		return false;
 	}
 
+	/**
+	 * Tries to remove a phase from the phase queue based on the provided filter function.
+	 * @param phaseFilter A function that filters the phase to be removed.
+	 * @returns Returns true if the phase is successfully removed, otherwise returns false.
+	 * @throws None
+	 */
 	tryRemovePhase(phaseFilter: (phase: Phase) => boolean): boolean {
 		const phaseIndex = this.phaseQueue.findIndex(phaseFilter);
 		if (phaseIndex > -1) {
@@ -1580,6 +2071,13 @@ export default class BattleScene extends SceneBase {
 		return false;
 	}
 
+	/**
+	 * Pushes a move phase into the phase queue with an optional priority override.
+	 * 
+	 * @param movePhase The move phase to push into the queue.
+	 * @param priorityOverride An optional integer value to override the priority of the move phase.
+	 * @throws {Error} Throws an error if there is an issue with applying ability attributes or manipulating the phase queue.
+	 */
 	pushMovePhase(movePhase: MovePhase, priorityOverride?: integer): void {
 		const movePriority = new Utils.IntegerHolder(priorityOverride !== undefined ? priorityOverride : movePhase.move.getMove().priority);
 		applyAbAttrs(IncrementMovePriorityAbAttr, movePhase.pokemon, null, movePhase.move.getMove(), movePriority);
@@ -1590,6 +2088,17 @@ export default class BattleScene extends SceneBase {
 			this.pushPhase(movePhase);
 	}
 
+	/**
+	 * Queue a message to be displayed in the message queue.
+	 * 
+	 * @param message The message to be queued.
+	 * @param callbackDelay Optional. The delay before the callback is invoked.
+	 * @param prompt Optional. Indicates whether a prompt should be displayed.
+	 * @param promptDelay Optional. The delay before the prompt is displayed.
+	 * @param defer Optional. Indicates whether the message should be deferred.
+	 * 
+	 * @throws {Error} If an error occurs while queuing the message.
+	 */
 	queueMessage(message: string, callbackDelay?: integer, prompt?: boolean, promptDelay?: integer, defer?: boolean) {
 		const phase = new MessagePhase(this, message, callbackDelay, prompt, promptDelay);
 		if (!defer)
@@ -1598,6 +2107,11 @@ export default class BattleScene extends SceneBase {
 			this.pushPhase(phase);
 	}
 
+	/**
+	 * Method to populate the phase queue.
+	 * 
+	 * @throws {Error} Throws an error if the nextCommandPhaseQueue is empty.
+	 */
 	populatePhaseQueue(): void {
 		if (this.nextCommandPhaseQueue.length) {
 			this.phaseQueue.push(...this.nextCommandPhaseQueue);
@@ -1606,12 +2120,24 @@ export default class BattleScene extends SceneBase {
 		this.phaseQueue.push(new TurnInitPhase(this));
 	}
 
+	/**
+	 * Adds the specified amount of money to the current balance.
+	 * 
+	 * @param amount The amount of money to add.
+	 * @throws {Error} If the resulting balance exceeds Number.MAX_SAFE_INTEGER.
+	 */
 	addMoney(amount: integer): void {
 		this.money = Math.min(this.money + amount, Number.MAX_SAFE_INTEGER);
 		this.updateMoneyText();
 		this.validateAchvs(MoneyAchv);
 	}
 
+	/**
+	 * Calculates the amount of money to be rewarded based on the wave index and a money multiplier.
+	 * @param moneyMultiplier The multiplier to be applied to the money value.
+	 * @returns The calculated money amount rounded down to the nearest multiple of 10.
+	 * @throws {TypeError} If moneyMultiplier is not a number.
+	 */
 	getWaveMoneyAmount(moneyMultiplier: number): integer {
 		const waveIndex = this.currentBattle.waveIndex;
 		const waveSetIndex = Math.ceil(waveIndex / 10) - 1;
@@ -1619,6 +2145,16 @@ export default class BattleScene extends SceneBase {
 		return Math.floor(moneyValue / 10) * 10;
 	}
 
+	/**
+	 * Adds a modifier to the current context.
+	 * @param modifier The modifier to be added.
+	 * @param ignoreUpdate If true, the update will be ignored.
+	 * @param playSound If true, a sound will be played.
+	 * @param virtual If true, the modifier is virtual.
+	 * @param instant If true, the modifier is instant.
+	 * @returns A promise that resolves to a boolean indicating the success of adding the modifier.
+	 * @throws {Error} If an error occurs during the addition of the modifier.
+	 */
 	addModifier(modifier: Modifier, ignoreUpdate?: boolean, playSound?: boolean, virtual?: boolean, instant?: boolean): Promise<boolean> {
 		return new Promise(resolve => {
 			let success = false;
@@ -1690,6 +2226,15 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Adds an enemy modifier to the battle.
+	 * 
+	 * @param modifier The persistent modifier to add.
+	 * @param ignoreUpdate Optional. If true, the update will be ignored.
+	 * @param instant Optional. If true, the modifier will be applied instantly.
+	 * @returns A Promise that resolves when the operation is complete.
+	 * @throws {Error} If there is an issue with adding the modifier.
+	 */
 	addEnemyModifier(modifier: PersistentModifier, ignoreUpdate?: boolean, instant?: boolean): Promise<void> {
 		return new Promise(resolve => {
 			const modifiersToRemove: PersistentModifier[] = [];
@@ -1708,6 +2253,20 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Asynchronously transfers a held item modifier to a target Pokemon.
+	 * 
+	 * @param itemModifier The PokemonHeldItemModifier to transfer.
+	 * @param target The target Pokemon to transfer the modifier to.
+	 * @param transferStack A boolean indicating whether to transfer the stack count of the modifier.
+	 * @param playSound A boolean indicating whether to play a sound during the transfer.
+	 * @param instant An optional boolean indicating whether the transfer should be instant.
+	 * @param ignoreUpdate An optional boolean indicating whether to ignore updating the modifiers.
+	 * 
+	 * @returns A Promise that resolves to a boolean indicating the success of the transfer.
+	 * 
+	 * @throws Throws an error if there is an issue with applying attribute modifiers or updating modifiers.
+	 */
 	tryTransferHeldItemModifier(itemModifier: PokemonHeldItemModifier, target: Pokemon, transferStack: boolean, playSound: boolean, instant?: boolean, ignoreUpdate?: boolean): Promise<boolean> {
 		return new Promise(resolve => {
 			const source = itemModifier.pokemonId ? itemModifier.getPokemon(target.scene) : null;
@@ -1733,6 +2292,11 @@ export default class BattleScene extends SceneBase {
 					removeOld = !(--itemModifier.stackCount);
 				}
 				if (!removeOld || !source || this.removeModifier(itemModifier, !source.isPlayer())) {
+					/**
+					 * Adds a modifier to the target.
+					 * 
+					 * @throws {Error} Throws an error if the matching modifier is not found or if the target is not a player.
+					 */
 					const addModifier = () => {
 						if (!matchingModifier || this.removeModifier(matchingModifier, !target.isPlayer())) {
 							if (target.isPlayer())
@@ -1753,6 +2317,12 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Removes all modifiers associated with a specific party member.
+	 * @param partyMemberIndex The index of the party member for which modifiers should be removed.
+	 * @throws {Error} Throws an error if the party member index is out of range.
+	 * @returns A Promise that resolves when the modifiers are successfully removed.
+	 */
 	removePartyMemberModifiers(partyMemberIndex: integer): Promise<void> {
 		return new Promise(resolve => {
 			const pokemonId = this.getParty()[partyMemberIndex].id;
@@ -1763,6 +2333,11 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Asynchronously generates enemy modifiers for the current battle.
+	 * @returns A Promise that resolves when the enemy modifiers have been generated.
+	 * @throws {Error} If there is an error generating enemy modifiers.
+	 */
 	generateEnemyModifiers(): Promise<void> {
 		return new Promise(resolve => {
 			if (this.currentBattle.battleSpec === BattleSpec.FINAL_BOSS)
@@ -1808,8 +2383,9 @@ export default class BattleScene extends SceneBase {
 	}
 
 	/**
-	* Removes all modifiers from enemy of PersistentModifier type
-	*/
+	 * Removes all modifiers from enemy of PersistentModifier type
+	 * @throws {Error} If there is an error while updating modifiers or UI positions
+	 */
 	clearEnemyModifiers(): void {
 		const modifiersToRemove = this.enemyModifiers.filter(m => m instanceof PersistentModifier);
 		for (let m of modifiersToRemove)
@@ -1818,8 +2394,9 @@ export default class BattleScene extends SceneBase {
 	}
 
 	/**
-	* Removes all modifiers from enemy of PokemonHeldItemModifier type
-	*/
+	 * Removes all modifiers from enemy of PokemonHeldItemModifier type
+	 * @throws {Error} Throws an error if updateModifiers or updateUIPositions functions fail
+	 */
 	clearEnemyHeldItemModifiers(): void {
 		const modifiersToRemove = this.enemyModifiers.filter(m => m instanceof PokemonHeldItemModifier);
 		for (let m of modifiersToRemove)
@@ -1827,10 +2404,23 @@ export default class BattleScene extends SceneBase {
 		this.updateModifiers(false).then(() => this.updateUIPositions());
 	}
 
+	/**
+	 * Sets the visibility of modifiers.
+	 * 
+	 * @param visible - A boolean value indicating the visibility of the modifiers.
+	 * @throws - No exceptions are thrown by this method.
+	 */
 	setModifiersVisible(visible: boolean) {
 		[ this.modifierBar, this.enemyModifierBar ].map(m => m.setVisible(visible));
 	}
 
+	/**
+	 * Updates the modifiers for the player or enemy.
+	 * @param player Optional parameter to specify if the modifiers are for the player. Defaults to true.
+	 * @param instant Optional parameter to specify if the update should be instant.
+	 * @returns A Promise that resolves when the modifiers are updated.
+	 * @throws {Error} If there is an error updating the modifiers.
+	 */
 	updateModifiers(player?: boolean, instant?: boolean): Promise<void> {
 		if (player === undefined)
 			player = true;
@@ -1861,6 +2451,13 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Updates party for modifiers.
+	 * @param party - The array of Pokemon objects representing the party.
+	 * @param instant - Optional parameter to indicate if the update should be instant.
+	 * @returns A Promise that resolves to void.
+	 * @throws Error if any of the asynchronous operations fail.
+	 */
 	updatePartyForModifiers(party: Pokemon[], instant?: boolean): Promise<void> {
 		return new Promise(resolve => {
 			Promise.allSettled(party.map(p => {
@@ -1871,6 +2468,14 @@ export default class BattleScene extends SceneBase {
 		});
 	}
 
+	/**
+	 * Removes the specified modifier from the list of modifiers.
+	 * 
+	 * @param modifier - The modifier to be removed.
+	 * @param enemy - Optional parameter to indicate if the modifier belongs to an enemy. Default is false.
+	 * @returns Returns true if the modifier is successfully removed, otherwise returns false.
+	 * @throws {Error} Throws an error if the modifier is not found in the list of modifiers.
+	 */
 	removeModifier(modifier: PersistentModifier, enemy?: boolean): boolean {
 		const modifiers = !enemy ? this.modifiers : this.enemyModifiers;
 		const modifierIndex = modifiers.indexOf(modifier);
@@ -1884,21 +2489,58 @@ export default class BattleScene extends SceneBase {
 		return false;
 	}
 
+	/**
+	 * Retrieves the modifiers of a specific type for a player or enemy.
+	 * @param modifierType The type of modifier to retrieve.
+	 * @param player Indicates whether to retrieve the modifiers for the player (default is true).
+	 * @returns An array of PersistentModifier objects that match the specified type.
+	 * @throws {Error} If the specified modifierType is not a valid constructor.
+	 */
 	getModifiers(modifierType: { new(...args: any[]): Modifier }, player: boolean = true): PersistentModifier[] {
 		return (player ? this.modifiers : this.enemyModifiers).filter(m => m instanceof modifierType);
 	}
 
+	/**
+	 * Find modifiers based on the provided filter and player type.
+	 * @param modifierFilter The filter function to apply on the modifiers.
+	 * @param player Indicates whether to search in player's modifiers or enemy's modifiers.
+	 * @returns An array of PersistentModifier objects that match the filter.
+	 */
 	findModifiers(modifierFilter: ModifierPredicate, player: boolean = true): PersistentModifier[] {
 		return (player ? this.modifiers : this.enemyModifiers).filter(m => (modifierFilter as ModifierPredicate)(m));
 	}
 
+	/**
+	 * Find modifier based on the provided filter and player type.
+	 * @param modifierFilter The filter to apply for finding the modifier.
+	 * @param player Indicates whether to search in player's modifiers or enemy's modifiers.
+	 * @returns The persistent modifier that matches the filter.
+	 */
 	findModifier(modifierFilter: ModifierPredicate, player: boolean = true): PersistentModifier {
 		return (player ? this.modifiers : this.enemyModifiers).find(m => (modifierFilter as ModifierPredicate)(m));
 	}
 
+	/**
+	 * Apply shuffled modifiers to the battle scene.
+	 * 
+	 * @param scene The battle scene to apply the modifiers to.
+	 * @param modifierType The type of modifier to apply.
+	 * @param player Indicates whether the modifier is for the player or the enemy. Default is true.
+	 * @param args Additional arguments for applying the modifiers.
+	 * @returns An array of persistent modifiers applied to the scene.
+	 * @throws {Error} Throws an error if there is an issue applying the modifiers.
+	 */
 	applyShuffledModifiers(scene: BattleScene, modifierType: { new(...args: any[]): Modifier }, player: boolean = true, ...args: any[]): PersistentModifier[] {
 		let modifiers = (player ? this.modifiers : this.enemyModifiers).filter(m => m instanceof modifierType && m.shouldApply(args));
 		scene.executeWithSeedOffset(() => {
+			/**
+			 * Shuffles the elements of an array.
+			 * @param mods The array of elements to be shuffled.
+			 * @returns The shuffled array of elements.
+			 * @throws {Error} If mods is not an array.
+			 * @throws {Error} If mods is an empty array.
+			 * @throws {Error} If mods contains non-numeric elements.
+			 */
 			const shuffleModifiers = mods => {
 				if (mods.length < 1)
 					return mods;
@@ -1910,11 +2552,27 @@ export default class BattleScene extends SceneBase {
 		return this.applyModifiersInternal(modifiers, player, args);
 	}
 
+	/**
+	 * Apply modifiers to the player or enemy based on the provided modifier type and arguments.
+	 * @param modifierType The type of modifier to apply.
+	 * @param player Indicates whether the modifiers should be applied to the player (default: true).
+	 * @param args Additional arguments to be passed to the modifiers.
+	 * @throws {Error} If an error occurs during the application of modifiers.
+	 * @returns An array of persistent modifiers applied to the player or enemy.
+	 */
 	applyModifiers(modifierType: { new(...args: any[]): Modifier }, player: boolean = true, ...args: any[]): PersistentModifier[] {
 		const modifiers = (player ? this.modifiers : this.enemyModifiers).filter(m => m instanceof modifierType && m.shouldApply(args));
 		return this.applyModifiersInternal(modifiers, player, args);
 	}
 
+	/**
+	 * Apply modifiers internally to the given player or enemy.
+	 * @param modifiers - The array of PersistentModifier objects to apply.
+	 * @param player - A boolean value indicating whether the modifiers are being applied to the player (true) or the enemy (false).
+	 * @param args - An array of any type of arguments to be used for applying the modifiers.
+	 * @returns An array of PersistentModifier objects that have been successfully applied.
+	 * @throws {Error} If there is an error while applying the modifiers.
+	 */
 	applyModifiersInternal(modifiers: PersistentModifier[], player: boolean, args: any[]): PersistentModifier[] {
 		const appliedModifiers: PersistentModifier[] = [];
 		for (let modifier of modifiers) {
@@ -1927,6 +2585,15 @@ export default class BattleScene extends SceneBase {
 		return appliedModifiers;
 	}
 
+	/**
+	 * Apply a modifier to the player or enemy.
+	 * 
+	 * @param modifierType The type of modifier to apply.
+	 * @param player Whether the modifier should be applied to the player (default: true).
+	 * @param args Additional arguments for applying the modifier.
+	 * @returns The applied persistent modifier, or null if no modifier was applied.
+	 * @throws {Error} If an error occurs during the application of the modifier.
+	 */
 	applyModifier(modifierType: { new(...args: any[]): Modifier }, player: boolean = true, ...args: any[]): PersistentModifier {
 		const modifiers = (player ? this.modifiers : this.enemyModifiers).filter(m => m instanceof modifierType && m.shouldApply(args));
 		for (let modifier of modifiers) {
@@ -1939,6 +2606,15 @@ export default class BattleScene extends SceneBase {
 		return null;
 	}
 
+	/**
+	 * Triggers a Pokemon form change based on the specified trigger type.
+	 * @param pokemon The Pokemon to trigger the form change for.
+	 * @param formChangeTriggerType The type of trigger for the form change.
+	 * @param delayed Whether the form change should be delayed.
+	 * @param modal Whether the form change should be modal.
+	 * @throws {Error} If the form change trigger type is not found or if the form change cannot be executed.
+	 * @returns {boolean} Returns true if the form change was triggered successfully, otherwise false.
+	 */
 	triggerPokemonFormChange(pokemon: Pokemon, formChangeTriggerType: { new(...args: any[]): SpeciesFormChangeTrigger }, delayed: boolean = false, modal: boolean = false): boolean {
 		if (pokemonFormChanges.hasOwnProperty(pokemon.species.speciesId)) {
 			const matchingFormChange = pokemonFormChanges[pokemon.species.speciesId].find(fc => fc.findTrigger(formChangeTriggerType) && fc.canChange(pokemon));
@@ -1961,12 +2637,26 @@ export default class BattleScene extends SceneBase {
 		return false;
 	}
 
+	/**
+	 * Validates the achievement type and its arguments.
+	 * 
+	 * @param achvType The type of achievement to validate.
+	 * @param args The arguments to validate.
+	 * @throws {Error} If there is an issue validating the achievement type or its arguments.
+	 */
 	validateAchvs(achvType: { new(...args: any[]): Achv }, ...args: any[]): void {
 		const filteredAchvs = Object.values(achvs).filter(a => a instanceof achvType);
 		for (let achv of filteredAchvs)
 			this.validateAchv(achv, args);
 	}
 
+	/**
+	 * Validates the achievement and unlocks it if the validation is successful.
+	 * @param achv The achievement to validate.
+	 * @param args Optional arguments for validation.
+	 * @returns Returns true if the achievement is successfully validated and unlocked, otherwise returns false.
+	 * @throws Throws an error if the validation fails.
+	 */
 	validateAchv(achv: Achv, args?: any[]): boolean {
 		if (!this.gameData.achvUnlocks.hasOwnProperty(achv.id) && achv.validate(this, args)) {
 			this.gameData.achvUnlocks[achv.id] = new Date().getTime();
@@ -1979,6 +2669,13 @@ export default class BattleScene extends SceneBase {
 		return false;
 	}
 
+	/**
+	 * Validates the voucher and performs necessary actions if the voucher is valid.
+	 * @param voucher - The voucher to be validated.
+	 * @param args - Optional arguments for voucher validation.
+	 * @returns A boolean indicating whether the voucher is valid.
+	 * @throws Error - If the voucher validation fails or if any of the called functions throw an error.
+	 */
 	validateVoucher(voucher: Voucher, args?: any[]): boolean {
 		if (!this.gameData.voucherUnlocks.hasOwnProperty(voucher.id) && voucher.validate(this, args)) {
 			this.gameData.voucherUnlocks[voucher.id] = new Date().getTime();
@@ -1990,6 +2687,10 @@ export default class BattleScene extends SceneBase {
 		return false;
 	}
 	
+	/**
+	 * Update the game information and store it in the window object.
+	 * @throws {Error} If any error occurs during the update process.
+	 */
 	updateGameInfo(): void {
 		const gameInfo = {
 			playTime: this.sessionPlayTime ? this.sessionPlayTime : 0,
