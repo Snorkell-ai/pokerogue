@@ -92,23 +92,17 @@ export async function printPokemon() {
   const api = new MainClient();
 
   const useExistingTmList = true;
-
   let enumStr = `export enum Species {\n`;
   let pokemonSpeciesStr = `\tallSpecies.push(\n`;
   const speciesLevelMoves: SpeciesLevelMoves = {};
   const speciesFormLevelMoves: SpeciesFormLevelMoves = {};
   const moveTmSpecies: TmSpecies = {};
-
   let pokemonArr: NamedAPIResource[] = [];
-
   let offset = 0;
   let pokemonResponse = await api.pokemon.listPokemons(offset, 2000)
-  
   pokemonArr = pokemonResponse.results;
-
   const types = Utils.getEnumKeys(Type).map(t => t.toLowerCase());
   const abilities = Utils.getEnumKeys(Abilities).map(a => a.toLowerCase().replace(/\_/g, '-'));
-
   const pokemonSpeciesList: PokemonSpecies[] = [];
 
   for (let p of pokemonArr) {
