@@ -279,115 +279,102 @@ export class LoadingScene extends SceneBase {
   }
 
   loadLoadingScreen() {
-    const mobile = isMobile();
-
-    const loadingGraphics: any[] = [];
-
-    const bg = this.add.image(0, 0, '');
-    bg.setOrigin(0, 0);
-    bg.setScale(6);
-    bg.setVisible(false);
-
-    const graphics = this.add.graphics();
-
-    graphics.lineStyle(4, 0xff00ff, 1).setDepth(10);
-
-    const progressBar = this.add.graphics();
-    const progressBox = this.add.graphics();
-    progressBox.lineStyle(5, 0xff00ff, 1.0);
-    progressBox.fillStyle(0x222222, 0.8);
-
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
-
-    const logo = this.add.image(width / 2, 240, '');
-    logo.setVisible(false);
-    logo.setOrigin(0.5, 0.5);
-    logo.setScale(4);
-
-    const percentText = this.make.text({
-      x: width / 2,
-      y: height / 2 - 24,
-      text: '0%',
-      style: {
-        font: "72px emerald",
-        color: "#ffffff",
-      },
-    });
-    percentText.setOrigin(0.5, 0.5);
-
-    const assetText = this.make.text({
-      x: width / 2,
-      y: height / 2 + 48,
-      text: "",
-      style: {
-        font: "48px emerald",
-        color: "#ffffff",
-      },
-    });
-    assetText.setOrigin(0.5, 0.5);
-
-    const intro = this.add.video(0, 0);
-    intro.setOrigin(0, 0);
-    intro.setScale(3);
-
-    this.load.on("progress", (value: string) => {
-      const parsedValue = parseFloat(value);
-      percentText.setText(`${Math.floor(parsedValue * 100)}%`);
-      progressBar.clear();
-      progressBar.fillStyle(0xffffff, 0.8);
-      progressBar.fillRect(width / 2 - 320, 360, 640 * parsedValue, 64);
-    });
-
-    this.load.on("fileprogress", file => {
-      assetText.setText(`Loading asset: ${file.key}`);
-    });
-    
-    loadingGraphics.push(bg, graphics, progressBar, progressBox, logo, percentText, assetText);
-
-    if (!mobile)
-      loadingGraphics.map(g => g.setVisible(false));
-
-    const destroyLoadingAssets = () => {
-      intro.destroy();
-      bg.destroy();
-      logo.destroy();
-      progressBar.destroy();
-      progressBox.destroy();
-      percentText.destroy();
-      assetText.destroy();
+    // Helper function to initialize basic graphic elements with style
+    const initGraphic = (lineThickness, lineColor, fillColor = null) => {
+        const graphic = this.add.graphics();
+        graphic.lineStyle(lineThickness, lineColor, 1);
+        if (fillColor !== null) {
+            graphic.fillStyle(fillColor, 0.8);
+        }
+        return graphic;
     };
 
-    this.load.on('filecomplete', key => {
-      switch (key) {
-        case 'intro_dark':
-          intro.load('intro_dark');
-          intro.on('complete', () => {
-            this.tweens.add({
-              targets: intro,
-              duration: 500,
-              alpha: 0,
-              ease: 'Sine.easeIn'
-            });
-            loadingGraphics.map(g => g.setVisible(true));
-          });
-          intro.play();
-          break;
-        case 'loading_bg':
-          bg.setTexture('loading_bg');
-          if (mobile)
-            bg.setVisible(true);
-          break;
-        case 'logo':
-          logo.setTexture('logo');
-          if (mobile)
-            logo.setVisible(true);
-          break;
-      }
+    // Helper function to create text elements
+    const createText = (text, fontSize, yPos) => {
+        return this.make.text({
+            x: this.cameras.main.width / 2,
+            y: yPos,
+            text: text,
+            style: {
+                font: `${fontSize}px emerald`,
+                color: "#ffffff",
+            },
+        }).setOrigin(0.5, 0.5);
+    };
+
+    // Check if the device is mobile
+    const mobile = isMobile();
+
+    // Basic scene elements container
+    const loadingGraphics = [];
+
+    // Background image configuration
+    const bg = this.add.image(0, 0, '').setOrigin(0, 0).setScale(6).setVisible(false);
+
+    // Progress bar and box setup
+    const progressBar = initGraphic(4, 0xffffff);
+    const progressBox = initGraphic(5, 0xff00ff, 0x222222);
+
+    // Text displays for loading percentage and asset details
+    const percentText = createText('0%', 72, this.cameras.main.height / 2 - 24);
+    const assetText = createText("", 48, this.cameras.main.height / 2 + 48);
+
+    // Intro video configuration
+    const intro = this.add.video(0, 0).setOrigin(0, 0).setScale(3);
+
+    // Listen to loading progress to update UI
+    this.load.on("progress", (value) => {
+        const parsedValue = parseFloat(value);
+        percentText.setText(`${Math.floor(parsedValue * 100)}%`);
+        progressBar.clear().fillStyle(0xffffff, 0.8).fillRect(
+            this.cameras.main.width / 2 - 320, 360, 640 * parsedValue, 64
+        );
     });
 
-    this.load.on("complete", () => destroyLoadingAssets());
-  }
+    // Update current loading asset text
+    this.load.on("fileprogress", file => {
+        assetText.setText(`Loading asset: ${file.key}`);
+    });
+
+    // Add elements to the graphics array for group manipulation
+    loadingGraphics.push(bg, progressBar, progressBox, percentText, assetText);
+
+    // Show or hide loading graphics based on device type
+    if (!mobile) {
+        loadingGraphics.forEach(g => g.setVisible(false));
+    }
+
+    // Manage specific asset loads with actions
+    this.load.on('filecomplete', key => {
+        switch (key) {
+            case 'intro_dark':
+                intro.load('intro_dark').on('complete', () => {
+                    loadingGraphics.forEach(g => g.setVisible(true));
+                    this.tweens.add({
+                        targets: intro,
+                        duration: 500,
+                        alpha: 0,
+                        ease: 'Sine.easeIn'
+                    });
+                });
+                intro.play();
+                break;
+            case 'loading_bg':
+                bg.setTexture('loading_bg').setVisible(mobile);
+                break;
+            case 'logo':
+                logo.setTexture('logo').setVisible(mobile);
+                break;
+        }
+    });
+
+    // Cleanup assets once loading is complete
+    this.load.on("complete", () => {
+        intro.destroy();
+        loadingGraphics.forEach(g => g.destroy());
+    });
+}
+
 
   get gameHeight() {
     return this.game.config.height as number;
