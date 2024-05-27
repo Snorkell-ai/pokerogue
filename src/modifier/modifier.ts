@@ -45,36 +45,55 @@ export class ModifierBar extends Phaser.GameObjects.Container {
   }
 
   updateModifiers(modifiers: PersistentModifier[]) {
+    // Remove all existing icons from the container.
     this.removeAll(true);
 
+    // Filter the modifiers to only those that should show an icon.
     const visibleIconModifiers = modifiers.filter(m => m.isIconVisible(this.scene as BattleScene));
 
+    // Sort the modifiers based on their defined sorting function.
     visibleIconModifiers.sort(modifierSortFunc);
 
-    const thisArg = this;
-
+    // Process each visible modifier to display its icon.
     visibleIconModifiers.forEach((modifier: PersistentModifier, i: integer) => {
+      // Get the icon from the modifier.
       const icon = modifier.getIcon(this.scene as BattleScene);
-      if (i >= iconOverflowIndex)
+      // If the index is beyond the max visible index, hide the icon.
+      if (i >= iconOverflowIndex) {
         icon.setVisible(false);
+      }
+      // Add the icon to the container.
       this.add(icon);
+      // Position the icon based on its order in the list.
       this.setModifierIconPosition(icon, visibleIconModifiers.length);
+      // Make the icon interactive.
       icon.setInteractive(new Phaser.Geom.Rectangle(0, 0, 32, 24), Phaser.Geom.Rectangle.Contains);
+
+      // Show tooltip on hover.
       icon.on('pointerover', () => {
         (this.scene as BattleScene).ui.showTooltip(modifier.type.name, modifier.type.getDescription(this.scene as BattleScene));
-        if (this.modifierCache && this.modifierCache.length > iconOverflowIndex)
-          thisArg.updateModifierOverflowVisibility(true);
+        // If there are more icons than the overflow index, handle visibility.
+        if (this.modifierCache && this.modifierCache.length > iconOverflowIndex) {
+          this.updateModifierOverflowVisibility(true);
+        }
       });
+
+      // Hide tooltip when not hovering.
       icon.on('pointerout', () => {
         (this.scene as BattleScene).ui.hideTooltip();
-        if (this.modifierCache && this.modifierCache.length > iconOverflowIndex)
-          thisArg.updateModifierOverflowVisibility(false);
+        // Handle hiding overflow icons when not needed.
+        if (this.modifierCache && this.modifierCache.length > iconOverflowIndex) {
+          this.updateModifierOverflowVisibility(false);
+        }
       });
     });
 
-    for (let icon of this.getAll())
+    // Ensure the most recent modifiers are displayed at the front.
+    for (let icon of this.getAll()) {
       this.sendToBack(icon);
+    }
 
+    // Cache the current list of modifiers for future reference.
     this.modifierCache = modifiers;
   }
 
