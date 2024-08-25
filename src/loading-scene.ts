@@ -278,7 +278,40 @@ export class LoadingScene extends SceneBase {
     this.loadLoadingScreen();
   }
 
+  /**
+   * Initializes and displays a loading screen with graphical elements,
+   * including a progress bar, loading percentage text, and asset details.
+   * This function sets up event listeners for loading progress and asset
+   * loading events, updating the UI accordingly.
+   *
+   * @returns {void} 
+   *
+   * @throws {Error} Throws an error if there is an issue with loading assets.
+   *
+   * @example
+   * // Call this method to load the loading screen when initializing the scene.
+   * this.loadLoadingScreen();
+   */
   loadLoadingScreen() {
+    /**
+     * Initializes a basic graphic element with specified styles.
+     *
+     * This helper function creates a graphics object, applies a line style 
+     * with the given thickness and color, and optionally applies a fill style 
+     * if a fill color is provided.
+     *
+     * @param {number} lineThickness - The thickness of the line to be drawn.
+     * @param {number} lineColor - The color of the line, represented as a hexadecimal value.
+     * @param {number|null} [fillColor=null] - The color to fill the graphic, represented as a hexadecimal value. 
+     *                                          If not provided, the graphic will not be filled.
+     * @returns {Graphics} The initialized graphics object with the applied styles.
+     *
+     * @throws {Error} Throws an error if the lineThickness is less than or equal to zero.
+     *
+     * @example
+     * const graphic = initGraphic(2, 0xff0000, 0x00ff00);
+     * // This creates a graphic with a red line of thickness 2 and a green fill.
+     */
     // Helper function to initialize basic graphic elements with style
     const initGraphic = (lineThickness, lineColor, fillColor = null) => {
         const graphic = this.add.graphics();
@@ -289,6 +322,25 @@ export class LoadingScene extends SceneBase {
         return graphic;
     };
 
+    /**
+     * Creates a text element with specified properties.
+     *
+     * This helper function generates a text object positioned at the center of the screen
+     * horizontally and at a specified vertical position. The text is styled with a specific
+     * font size and color.
+     *
+     * @param {string} text - The text content to be displayed.
+     * @param {number} fontSize - The size of the font in pixels.
+     * @param {number} yPos - The vertical position (Y-coordinate) for the text element.
+     * @returns {Phaser.GameObjects.Text} The created text object.
+     *
+     * @throws {Error} Throws an error if the fontSize is not a positive number.
+     *
+     * @example
+     * const myText = createText("Hello World", 24, 100);
+     * // This will create a text element saying "Hello World" with a font size of 24px
+     * // positioned at Y-coordinate 100.
+     */
     // Helper function to create text elements
     const createText = (text, fontSize, yPos) => {
         return this.make.text({
