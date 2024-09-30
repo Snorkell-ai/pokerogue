@@ -237,6 +237,26 @@ export default class Battle {
     }
 
     /**
+     * Adds the battle score to the scene, nothing else
+     */
+    addBattleScore1(scene: BattleScene): void {
+        let partyMemberTurnMultiplier = scene.getEnemyParty().length / 2 + 0.5;
+        if (this.double)
+            partyMemberTurnMultiplier /= 1.5;
+        for (let p of scene.getEnemyParty()) {
+            if (p.isBoss())
+                partyMemberTurnMultiplier *= (p.bossSegments / 1.5) / scene.getEnemyParty().length;
+        }
+        const turnMultiplier = Phaser.Tweens.Builders.GetEaseFunction('Sine.easeIn')(1 - Math.min(this.turn - 2, 10 * partyMemberTurnMultiplier) / (10 * partyMemberTurnMultiplier));
+        const finalBattleScore = Math.ceil(this.battleScore * turnMultiplier);
+        scene.score += finalBattleScore;
+        console.log(`Battle Score: ${finalBattleScore} (${this.turn - 1} Turns x${Math.floor(turnMultiplier * 100) / 100})`);
+        console.log(`Total Score: ${scene.score}`);
+        scene.updateScoreText();
+    }
+
+
+    /**
      * Retrieves the background music override for the battle scene.
      * 
      * @param scene - The battle scene for which the background music override is needed.
