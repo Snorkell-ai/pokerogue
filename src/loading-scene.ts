@@ -278,116 +278,155 @@ export class LoadingScene extends SceneBase {
     this.loadLoadingScreen();
   }
 
+  /**
+   * Initializes and displays a loading screen with graphical elements,
+   * including a progress bar, loading percentage text, and asset details.
+   * This function sets up event listeners for loading progress and asset
+   * loading events, updating the UI accordingly.
+   *
+   * @returns {void} 
+   *
+   * @throws {Error} Throws an error if there is an issue with loading assets.
+   *
+   * @example
+   * // Call this method to load the loading screen when initializing the scene.
+   * this.loadLoadingScreen();
+   */
   loadLoadingScreen() {
-    const mobile = isMobile();
-
-    const loadingGraphics: any[] = [];
-
-    const bg = this.add.image(0, 0, '');
-    bg.setOrigin(0, 0);
-    bg.setScale(6);
-    bg.setVisible(false);
-
-    const graphics = this.add.graphics();
-
-    graphics.lineStyle(4, 0xff00ff, 1).setDepth(10);
-
-    const progressBar = this.add.graphics();
-    const progressBox = this.add.graphics();
-    progressBox.lineStyle(5, 0xff00ff, 1.0);
-    progressBox.fillStyle(0x222222, 0.8);
-
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
-
-    const logo = this.add.image(width / 2, 240, '');
-    logo.setVisible(false);
-    logo.setOrigin(0.5, 0.5);
-    logo.setScale(4);
-
-    const percentText = this.make.text({
-      x: width / 2,
-      y: height / 2 - 24,
-      text: '0%',
-      style: {
-        font: "72px emerald",
-        color: "#ffffff",
-      },
-    });
-    percentText.setOrigin(0.5, 0.5);
-
-    const assetText = this.make.text({
-      x: width / 2,
-      y: height / 2 + 48,
-      text: "",
-      style: {
-        font: "48px emerald",
-        color: "#ffffff",
-      },
-    });
-    assetText.setOrigin(0.5, 0.5);
-
-    const intro = this.add.video(0, 0);
-    intro.setOrigin(0, 0);
-    intro.setScale(3);
-
-    this.load.on("progress", (value: string) => {
-      const parsedValue = parseFloat(value);
-      percentText.setText(`${Math.floor(parsedValue * 100)}%`);
-      progressBar.clear();
-      progressBar.fillStyle(0xffffff, 0.8);
-      progressBar.fillRect(width / 2 - 320, 360, 640 * parsedValue, 64);
-    });
-
-    this.load.on("fileprogress", file => {
-      assetText.setText(`Loading asset: ${file.key}`);
-    });
-    
-    loadingGraphics.push(bg, graphics, progressBar, progressBox, logo, percentText, assetText);
-
-    if (!mobile)
-      loadingGraphics.map(g => g.setVisible(false));
-
-    const destroyLoadingAssets = () => {
-      intro.destroy();
-      bg.destroy();
-      logo.destroy();
-      progressBar.destroy();
-      progressBox.destroy();
-      percentText.destroy();
-      assetText.destroy();
+    /**
+     * Initializes a basic graphic element with specified styles.
+     *
+     * This helper function creates a graphics object, applies a line style 
+     * with the given thickness and color, and optionally applies a fill style 
+     * if a fill color is provided.
+     *
+     * @param {number} lineThickness - The thickness of the line to be drawn.
+     * @param {number} lineColor - The color of the line, represented as a hexadecimal value.
+     * @param {number|null} [fillColor=null] - The color to fill the graphic, represented as a hexadecimal value. 
+     *                                          If not provided, the graphic will not be filled.
+     * @returns {Graphics} The initialized graphics object with the applied styles.
+     *
+     * @throws {Error} Throws an error if the lineThickness is less than or equal to zero.
+     *
+     * @example
+     * const graphic = initGraphic(2, 0xff0000, 0x00ff00);
+     * // This creates a graphic with a red line of thickness 2 and a green fill.
+     */
+    // Helper function to initialize basic graphic elements with style
+    const initGraphic = (lineThickness, lineColor, fillColor = null) => {
+        const graphic = this.add.graphics();
+        graphic.lineStyle(lineThickness, lineColor, 1);
+        if (fillColor !== null) {
+            graphic.fillStyle(fillColor, 0.8);
+        }
+        return graphic;
     };
 
-    this.load.on('filecomplete', key => {
-      switch (key) {
-        case 'intro_dark':
-          intro.load('intro_dark');
-          intro.on('complete', () => {
-            this.tweens.add({
-              targets: intro,
-              duration: 500,
-              alpha: 0,
-              ease: 'Sine.easeIn'
-            });
-            loadingGraphics.map(g => g.setVisible(true));
-          });
-          intro.play();
-          break;
-        case 'loading_bg':
-          bg.setTexture('loading_bg');
-          if (mobile)
-            bg.setVisible(true);
-          break;
-        case 'logo':
-          logo.setTexture('logo');
-          if (mobile)
-            logo.setVisible(true);
-          break;
-      }
+    /**
+     * Creates a text element with specified properties.
+     *
+     * This helper function generates a text object positioned at the center of the screen
+     * horizontally and at a specified vertical position. The text is styled with a specific
+     * font size and color.
+     *
+     * @param {string} text - The text content to be displayed.
+     * @param {number} fontSize - The size of the font in pixels.
+     * @param {number} yPos - The vertical position (Y-coordinate) for the text element.
+     * @returns {Phaser.GameObjects.Text} The created text object.
+     *
+     * @throws {Error} Throws an error if the fontSize is not a positive number.
+     *
+     * @example
+     * const myText = createText("Hello World", 24, 100);
+     * // This will create a text element saying "Hello World" with a font size of 24px
+     * // positioned at Y-coordinate 100.
+     */
+    // Helper function to create text elements
+    const createText = (text, fontSize, yPos) => {
+        return this.make.text({
+            x: this.cameras.main.width / 2,
+            y: yPos,
+            text: text,
+            style: {
+                font: `${fontSize}px emerald`,
+                color: "#ffffff",
+            },
+        }).setOrigin(0.5, 0.5);
+    };
+
+    // Check if the device is mobile
+    const mobile = isMobile();
+
+    // Basic scene elements container
+    const loadingGraphics = [];
+
+    // Background image configuration
+    const bg = this.add.image(0, 0, '').setOrigin(0, 0).setScale(6).setVisible(false);
+
+    // Progress bar and box setup
+    const progressBar = initGraphic(4, 0xffffff);
+    const progressBox = initGraphic(5, 0xff00ff, 0x222222);
+
+    // Text displays for loading percentage and asset details
+    const percentText = createText('0%', 72, this.cameras.main.height / 2 - 24);
+    const assetText = createText("", 48, this.cameras.main.height / 2 + 48);
+
+    // Intro video configuration
+    const intro = this.add.video(0, 0).setOrigin(0, 0).setScale(3);
+
+    // Listen to loading progress to update UI
+    this.load.on("progress", (value) => {
+        const parsedValue = parseFloat(value);
+        percentText.setText(`${Math.floor(parsedValue * 100)}%`);
+        progressBar.clear().fillStyle(0xffffff, 0.8).fillRect(
+            this.cameras.main.width / 2 - 320, 360, 640 * parsedValue, 64
+        );
     });
 
-    this.load.on("complete", () => destroyLoadingAssets());
-  }
+    // Update current loading asset text
+    this.load.on("fileprogress", file => {
+        assetText.setText(`Loading asset: ${file.key}`);
+    });
+
+    // Add elements to the graphics array for group manipulation
+    loadingGraphics.push(bg, progressBar, progressBox, percentText, assetText);
+
+    // Show or hide loading graphics based on device type
+    if (!mobile) {
+        loadingGraphics.forEach(g => g.setVisible(false));
+    }
+
+    // Manage specific asset loads with actions
+    this.load.on('filecomplete', key => {
+        switch (key) {
+            case 'intro_dark':
+                intro.load('intro_dark').on('complete', () => {
+                    loadingGraphics.forEach(g => g.setVisible(true));
+                    this.tweens.add({
+                        targets: intro,
+                        duration: 500,
+                        alpha: 0,
+                        ease: 'Sine.easeIn'
+                    });
+                });
+                intro.play();
+                break;
+            case 'loading_bg':
+                bg.setTexture('loading_bg').setVisible(mobile);
+                break;
+            case 'logo':
+                logo.setTexture('logo').setVisible(mobile);
+                break;
+        }
+    });
+
+    // Cleanup assets once loading is complete
+    this.load.on("complete", () => {
+        intro.destroy();
+        loadingGraphics.forEach(g => g.destroy());
+    });
+}
+
 
   get gameHeight() {
     return this.game.config.height as number;
