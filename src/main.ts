@@ -95,6 +95,10 @@ document.fonts.load('16px emerald').then(() => document.fonts.load('10px pkmnems
 
 let game;
 
+/**
+ * Starts the game by creating a new Phaser game and setting sound pause on blur to false.
+ * @throws {Error} If the game creation fails.
+ */
 const startGame = () => {
 	game = new Phaser.Game(config);
 	game.sound.pauseOnBlur = false;

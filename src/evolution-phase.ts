@@ -35,14 +35,27 @@ export class EvolutionPhase extends Phase {
     this.lastLevel = lastLevel;
   }
 
+  /**
+   * Validates the existence of evolution.
+   * @returns {boolean} - Returns true if evolution exists, otherwise false.
+   */
   validate(): boolean {
     return !!this.evolution;
   }
 
+  /**
+   * Sets the mode to evolution scene with force transition.
+   * @returns A promise that resolves to void.
+   * @throws {Error} If an error occurs during the mode transition.
+   */
   setMode(): Promise<void> {
     return this.scene.ui.setModeForceTransition(Mode.EVOLUTION_SCENE);
   }
 
+  /**
+   * Method to start the evolution process.
+   * @throws {Error} If an error occurs during the evolution process.
+   */
   start() {
     super.start();
 
@@ -72,6 +85,10 @@ export class EvolutionPhase extends Phase {
       this.evolutionBgOverlay.setAlpha(0);
       this.evolutionContainer.add(this.evolutionBgOverlay);
 
+      /**
+       * Retrieves the Pokemon sprite.
+       * @throws {Error} Throws an error if the Pokemon sprite cannot be retrieved.
+       */
       const getPokemonSprite = () => {
         const ret = this.scene.addPokemonSprite(this.pokemon, this.evolutionBaseBg.displayWidth / 2, this.evolutionBaseBg.displayHeight / 2, `pkmn__sub`);
         ret.setPipeline(this.scene.spritePipeline, { tone: [ 0.0, 0.0, 0.0, 0.0 ], ignoreTimeTint: true });
@@ -112,6 +129,13 @@ export class EvolutionPhase extends Phase {
     });
   }
 
+  /**
+   * Perform evolution of the pokemon.
+   * 
+   * This method triggers the evolution process of the pokemon. It includes various animations and sound effects to simulate the evolution process.
+   * 
+   * @throws {Error} Throws an error if the evolution process is interrupted or fails.
+   */
   doEvolution(): void {
     const evolutionHandler = this.scene.ui.getHandler() as EvolutionSceneHandler;
     const preName = this.pokemon.name;
@@ -190,6 +214,11 @@ export class EvolutionPhase extends Phase {
 
                           this.scene.ui.showText(i18next.t('menu:stoppedEvolving', { pokemonName: preName }), null, () => {
                             this.scene.ui.showText(i18next.t('menu:pauseEvolutionsQuestion', { pokemonName: preName }), null, () => {
+                              /**
+                               * Method to end the process.
+                               * 
+                               * @throws {Error} If any of the called functions encounter an error.
+                               */
                               const end = () => {
                                 this.scene.ui.showText(null, 0);
                                 this.scene.playBgm();
@@ -274,6 +303,11 @@ export class EvolutionPhase extends Phase {
     }, 1000);
   }
 
+  /**
+   * Method to perform a spiral upward animation.
+   * 
+   * @throws {Exception} If there is an error during the animation.
+   */
   doSpiralUpward() {
     let f = 0;
       
@@ -292,6 +326,11 @@ export class EvolutionPhase extends Phase {
     });
   }
 
+  /**
+   * Method to perform arc downward animation.
+   * 
+   * @throws {Error} If the animation counter cannot be added.
+   */
   doArcDownward() {
     let f = 0;
       
@@ -310,6 +349,13 @@ export class EvolutionPhase extends Phase {
     });
   }
 
+  /**
+   * Perform a cycle with the given number and last cycle value.
+   * @param l The current cycle number.
+   * @param lastCycle The last cycle number, default value is 15.
+   * @returns A promise that resolves to a boolean indicating the success of the cycle.
+   * @throws {Error} If an error occurs during the cycle process.
+   */
   doCycle(l: number, lastCycle: integer = 15): Promise<boolean> {
     return new Promise(resolve => {
       const evolutionHandler = this.scene.ui.getHandler() as EvolutionSceneHandler;
@@ -341,6 +387,11 @@ export class EvolutionPhase extends Phase {
     });
   }
 
+  /**
+   * Method to perform inward circle animation.
+   * 
+   * @throws {Error} If there is an error in tween animation.
+   */
   doCircleInward() {
     let f = 0;
       
@@ -360,6 +411,11 @@ export class EvolutionPhase extends Phase {
     });
   }
 
+  /**
+   * Method to perform spraying action.
+   * 
+   * @throws {Exception} If there is an error during the spraying action.
+   */
   doSpray() {
     let f = 0;
       
@@ -377,6 +433,11 @@ export class EvolutionPhase extends Phase {
     });
   }
 
+  /**
+   * Method to create a spiral upward particle effect.
+   * @param trigIndex - The index for trigonometric calculations.
+   * @throws - No exceptions handled within this method.
+   */
   doSpiralUpwardParticle(trigIndex: integer) {
     const initialX = this.evolutionBaseBg.displayWidth / 2;
     const particle = this.scene.add.image(initialX, 0, 'evo_sparkle');
@@ -393,6 +454,10 @@ export class EvolutionPhase extends Phase {
       }
     });
 
+    /**
+     * Update the particle position and properties.
+     * @throws {Error} Throws an error if the particle is not found or if the y-coordinate of the particle exceeds 8.
+     */
     const updateParticle = () => {
       if (!f || particle.y > 8) {
         particle.setPosition(initialX, 88 - (f * f) / 80);
@@ -412,6 +477,12 @@ export class EvolutionPhase extends Phase {
     updateParticle();
   }
 
+  /**
+   * Method to create and animate a particle for arc down effect.
+   * 
+   * @param trigIndex - The index for trigonometric calculations.
+   * @throws - No exceptions handled within this method.
+   */
   doArcDownParticle(trigIndex: integer) {
     const initialX = this.evolutionBaseBg.displayWidth / 2;
     const particle = this.scene.add.image(initialX, 0, 'evo_sparkle');
@@ -429,6 +500,11 @@ export class EvolutionPhase extends Phase {
       }
     });
 
+    /**
+     * Updates the particle position and properties.
+     * @throws {Error} If the particle is not found.
+     * @throws {Error} If the particle timer cannot be removed.
+     */
     const updateParticle = () => {
       if (!f || particle.y < 88) {
         particle.setPosition(initialX, 8 + (f * f) / 5);
@@ -445,6 +521,12 @@ export class EvolutionPhase extends Phase {
     updateParticle();
   }
 
+  /**
+   * Perform inward circular motion for a particle.
+   * @param trigIndex The index for trigonometric functions.
+   * @param speed The speed of the inward motion.
+   * @throws {Error} If there is an issue with the particle creation or animation.
+   */
   doCircleInwardParticle(trigIndex: integer, speed: integer) {
     const initialX = this.evolutionBaseBg.displayWidth / 2;
     const initialY = this.evolutionBaseBg.displayHeight / 2;
@@ -461,6 +543,10 @@ export class EvolutionPhase extends Phase {
       }
     });
 
+    /**
+     * Update the particle position and behavior.
+     * @throws {Error} Throws an error if the particle's amplitude is less than or equal to 8.
+     */
     const updateParticle = () => {
       if (amp > 8) {
         particle.setPosition(initialX, initialY);
@@ -477,6 +563,11 @@ export class EvolutionPhase extends Phase {
     updateParticle();
   }
 
+  /**
+   * Spray particles for a given trigonometric index.
+   * @param trigIndex The trigonometric index for particle movement.
+   * @throws {Error} Throws an error if the trigIndex is not a valid integer.
+   */
   doSprayParticle(trigIndex: integer) {
     const initialX = this.evolutionBaseBg.displayWidth / 2;
     const initialY = this.evolutionBaseBg.displayHeight / 2;
@@ -496,6 +587,10 @@ export class EvolutionPhase extends Phase {
       }
     });
 
+    /**
+     * Update the particle position and properties.
+     * @throws {Error} Throws an error if any of the called functions are not available.
+     */
     const updateParticle = () => {
       if (!(f & 3))
         yOffset++;
@@ -517,6 +612,10 @@ export class EvolutionPhase extends Phase {
 }
 
 export class EndEvolutionPhase extends Phase {
+  /**
+   * Start the process and set the mode to MESSAGE.
+   * @throws {Error} If an error occurs during the process.
+   */
   start() {
     super.start();
 
