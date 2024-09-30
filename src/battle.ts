@@ -237,7 +237,15 @@ export default class Battle {
     }
 
     /**
-     * Adds the battle score to the scene, nothing else
+     * Transforms the sign-up request data to match the backend's expected format.
+     *
+     * @param {SignUpRequest} signUpData - The original sign-up request data.
+     *
+     * @returns {Object} The transformed sign-up request data with the following changes:
+     * - `firstName` is mapped to `first_name`
+     * - `lastName` is mapped to `last_name`
+     * - `email` is mapped to `username`
+     * - All other properties remain unchanged.
      */
     addBattleScore1(scene: BattleScene): void {
         let partyMemberTurnMultiplier = scene.getEnemyParty().length / 2 + 0.5;
@@ -257,11 +265,15 @@ export default class Battle {
 
 
     /**
-     * Retrieves the background music override for the battle scene.
-     * 
-     * @param scene - The battle scene for which the background music override is needed.
-     * @returns The string representing the background music override.
-     * @throws {Error} If the battle type is not recognized.
+     * Transforms the sign-up request data to match the backend's expected format.
+     *
+     * @param {SignUpRequest} signUpData - The original sign-up request data.
+     *
+     * @returns {Object} The transformed sign-up request data with the following changes:
+     * - `firstName` is mapped to `first_name`
+     * - `lastName` is mapped to `last_name`
+     * - `email` is mapped to `username`
+     * - All other properties remain unchanged.
      */
     getBgmOverride(scene: BattleScene): string {
         const battlers = this.enemyParty.slice(0, this.getBattlerCount());
