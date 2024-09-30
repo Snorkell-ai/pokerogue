@@ -237,8 +237,20 @@ export default class Battle {
     }
 
     /**
-     * Adds the battle score to the scene, nothing else
-     */
+         * Adds the battle score to the specified battle scene.
+         * This method calculates the battle score based on the current turn and the enemy party's characteristics,
+         * and updates the scene's score accordingly.
+         *
+         * @param {BattleScene} scene - The battle scene to which the score will be added.
+         * @returns {void} This method does not return a value.
+         *
+         * @throws {Error} Throws an error if the scene is not valid or if there are issues accessing the enemy party.
+         *
+         * @example
+         * const battleScene = new BattleScene();
+         * addBattleScore1(battleScene);
+         * // Updates the battle score in the battleScene instance.
+         */
     addBattleScore1(scene: BattleScene): void {
         let partyMemberTurnMultiplier = scene.getEnemyParty().length / 2 + 0.5;
         if (this.double)
@@ -257,12 +269,20 @@ export default class Battle {
 
 
     /**
-     * Retrieves the background music override for the battle scene.
-     * 
-     * @param scene - The battle scene for which the background music override is needed.
-     * @returns The string representing the background music override.
-     * @throws {Error} If the battle type is not recognized.
-     */
+         * Retrieves the background music override for the specified battle scene.
+         * 
+         * This function determines the appropriate background music based on various factors,
+         * including the type of battle, the species of the Pokémon involved, and the current game mode.
+         * 
+         * @param {BattleScene} scene - The battle scene for which the background music override is needed.
+         * @returns {string} The string representing the background music override. 
+         *                   Returns null if no specific override is applicable.
+         * @throws {Error} If the battle type is not recognized.
+         * 
+         * @example
+         * const bgm = getBgmOverride(currentBattleScene);
+         * console.log(bgm); // Outputs the background music identifier for the battle scene.
+         */
     getBgmOverride(scene: BattleScene): string {
         const battlers = this.enemyParty.slice(0, this.getBattlerCount());
         if (this.battleType === BattleType.TRAINER) {
