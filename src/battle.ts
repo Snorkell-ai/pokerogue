@@ -131,12 +131,21 @@ export default class Battle {
     }
 
     /**
-     * Generates a random seed using Gaussian distribution for the given level.
-     * 
-     * @param value The level for which the random seed is generated.
-     * @returns The generated random seed.
-     * @throws None
-     */
+         * Generates a random seed using Gaussian distribution for the specified level.
+         * This function computes a random seed by summing random values generated 
+         * in the range of 0 to 1, divided by the given level to normalize the result.
+         *
+         * @param {number} value - The level for which the random seed is generated. 
+         *                         It should be a positive integer representing the 
+         *                         number of iterations for generating the random seed.
+         * @returns {number} The generated random seed, which is a floating-point 
+         *                  number in the range [0, 1].
+         * @throws None
+         *
+         * @example
+         * const seed = randSeedGaussForLevel(5);
+         * console.log(seed); // Outputs a random seed based on Gaussian distribution.
+         */
     randSeedGaussForLevel(value: number): number { 
         let rand = 0;
 
