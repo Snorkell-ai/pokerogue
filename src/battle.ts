@@ -237,8 +237,21 @@ export default class Battle {
     }
 
     /**
-     * Adds the battle score to the scene, nothing else
-     */
+    * Retrieves the background music override for the battle scene.
+    *
+    * This method determines the appropriate background music based on the current battle scene,
+    * the type of battle, and the characteristics of the battlers involved. It checks various conditions
+    * such as the battle type, game mode, and specific attributes of the Pokémon to return the correct
+    * music track.
+    *
+    * @param {BattleScene} scene - The battle scene for which the background music override is needed.
+    * @returns {string} The string representing the background music override, or null if no override is applicable.
+    * @throws {Error} If the battle type is not recognized.
+    *
+    * @example
+    * const bgm = getBgmOverride(currentScene);
+    * console.log(bgm); // Outputs the appropriate background music track for the current battle scene.
+    */
     addBattleScore1(scene: BattleScene): void {
         let partyMemberTurnMultiplier = scene.getEnemyParty().length / 2 + 0.5;
         if (this.double)
@@ -257,12 +270,21 @@ export default class Battle {
 
 
     /**
-     * Retrieves the background music override for the battle scene.
-     * 
-     * @param scene - The battle scene for which the background music override is needed.
-     * @returns The string representing the background music override.
-     * @throws {Error} If the battle type is not recognized.
-     */
+    * Retrieves the background music override for the battle scene.
+    *
+    * This method determines the appropriate background music based on the current battle scene,
+    * the type of battle, and the characteristics of the battlers involved. It checks various conditions
+    * such as the battle type, game mode, and specific attributes of the Pokémon to return the correct
+    * music track.
+    *
+    * @param {BattleScene} scene - The battle scene for which the background music override is needed.
+    * @returns {string} The string representing the background music override, or null if no override is applicable.
+    * @throws {Error} If the battle type is not recognized.
+    *
+    * @example
+    * const bgm = getBgmOverride(currentScene);
+    * console.log(bgm); // Outputs the appropriate background music track for the current battle scene.
+    */
     getBgmOverride(scene: BattleScene): string {
         const battlers = this.enemyParty.slice(0, this.getBattlerCount());
         if (this.battleType === BattleType.TRAINER) {
